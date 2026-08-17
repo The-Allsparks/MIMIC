@@ -1,0 +1,36 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'org.allsparks'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes(
+            'Implementation-Title': 'MIMIC',
+            'Implementation-Version': archiveVersion,
+            'Automatic-Module-Name': 'org.allsparks.mimic'
+        )
+    }
+}
