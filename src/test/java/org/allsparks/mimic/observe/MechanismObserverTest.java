@@ -63,4 +63,108 @@ class MechanismObserverTest {
         assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.absoluteSensor().validity());
         assertTrue(Double.isNaN(snapshot.currentAmps()));
     }
+
+    @Test
+    void staleCheckDisabledByDefaultDoesNotMarkStale() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 0L);
+        assertEquals(MeasurementValidity.VALID, observer.capture().absoluteSensor().validity());
+        time.addAndGet(5_000_000_000L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void negativeStaleAfterNanosDisablesCheck() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, -1L);
+        observer.capture();
+        time.addAndGet(5_000_000_000L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void firstCaptureIsNeverStale() {
+        AtomicLong time = new AtomicLong(9_000_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void gapAboveThresholdMarksNumericSamplesStale() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        observer.capture();
+        time.addAndGet(50_000_001L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.STALE, snapshot.absoluteSensor().validity());
+        assertEquals(12.5, snapshot.absoluteSensor().value(), 1e-9);
+        assertFalse(snapshot.sensorValid());
+    }
+
+    @Test
+    void gapEqualToThresholdRemainsValid() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        observer.capture();
+        time.addAndGet(50_000_000L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void gapWithinThresholdRemainsValid() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        observer.capture();
+        time.addAndGet(49_999_999L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void captureAfterStaleRecoversWhenLoopIsTimely() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        observer.capture();
+        time.addAndGet(50_000_001L);
+        assertEquals(MeasurementValidity.STALE, observer.capture().absoluteSensor().validity());
+        time.addAndGet(1_000_000L);
+        MechanismSnapshot recovered = observer.capture();
+        assertEquals(MeasurementValidity.VALID, recovered.absoluteSensor().validity());
+        assertTrue(recovered.sensorValid());
+    }
+
+    @Test
+    void frozenSupplierOnFastLoopRemainsValid() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        MechanismSnapshot first = observer.capture();
+        time.addAndGet(20_000_000L);
+        MechanismSnapshot second = observer.capture();
+        assertEquals(first.absoluteSensor().value(), second.absoluteSensor().value(), 1e-9);
+        assertEquals(MeasurementValidity.VALID, second.absoluteSensor().validity());
+        assertTrue(second.sensorValid());
+    }
+
+    private static MechanismObserver livenessObserver(AtomicLong time, long staleAfterNanos) {
+        MechanismObserver.Builder builder = MechanismObserver.builder(
+                        "elev",
+                        time::get,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> 100.0)
+                .ticksPerSecond(() -> 0.0)
+                .absoluteSensor(() -> 12.5, "mm");
+        if (staleAfterNanos != 0L) {
+            builder.staleAfterNanos(staleAfterNanos);
+        }
+        return builder.build();
+    }
 }

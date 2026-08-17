@@ -13,6 +13,14 @@ import org.allsparks.mimic.units.MechanismUnits;
  * Acceleration is a finite-difference estimate from successive usable
  * velocity samples. Missing sensors degrade to {@link MeasurementValidity}
  * rather than inventing values.
+ *
+ * {@link MeasurementValidity#STALE} is observer liveness, not Control Hub
+ * sample age. When {@code staleAfterNanos > 0}, a capture whose start time
+ * is more than that many nanoseconds after the previous capture start marks
+ * numeric {@link SensorSample}s {@code STALE}. Instantaneous
+ * {@link DoubleSupplier} reads cannot detect a frozen Hub cache; a timely
+ * loop still reports {@code VALID}. The first capture is never {@code STALE}.
+ * Limit switches and effort values are not freshness-classified in Phase 0.
  */
 public final class MechanismObserver {
     private final String mechanismId;
@@ -36,6 +44,8 @@ public final class MechanismObserver {
     private double lastVelocity = Double.NaN;
     private long lastTimestampNanos;
     private boolean hasLastVelocity;
+    private long lastCaptureNanos;
+    private boolean hasLastCapture;
     private MechanismSnapshot lastSnapshot;
 
     public MechanismObserver(Builder builder) {
@@ -100,6 +110,8 @@ public final class MechanismObserver {
                 disagreement,
                 start,
                 duration);
+        lastCaptureNanos = start;
+        hasLastCapture = true;
         lastSnapshot = snapshot;
         return snapshot;
     }
@@ -228,9 +240,18 @@ public final class MechanismObserver {
         }
     }
 
+    /**
+     * Classifies a numeric sample using observer liveness, not Hub sample age.
+     *
+     * When {@code staleAfterNanos > 0} and a previous capture exists, if
+     * {@code now - lastCaptureNanos > staleAfterNanos} the sample is
+     * {@link MeasurementValidity#STALE}. Equal to the threshold stays
+     * {@link MeasurementValidity#VALID}. {@code staleAfterNanos <= 0} disables
+     * the check. Frozen supplier values on a timely loop remain {@code VALID}.
+     */
     private SensorSample freshness(double value, long now, String channelId, String unitSymbol) {
-        if (staleAfterNanos > 0L && lastSnapshot != null) {
-            long age = now - lastSnapshot.timestampNanos();
+        if (staleAfterNanos > 0L && hasLastCapture) {
+            long age = now - lastCaptureNanos;
             if (age > staleAfterNanos) {
                 return SensorSample.stale(value, now, channelId, unitSymbol);
             }
@@ -314,6 +335,15 @@ public final class MechanismObserver {
             return this;
         }
 
+        /**
+         * Max nanoseconds between consecutive {@link MechanismObserver#capture()}
+         * starts before numeric samples are {@link MeasurementValidity#STALE}.
+         *
+         * This is observer liveness (loop-call gap), not Control Hub sample
+         * age. {@code <= 0} disables the check (default {@code 0}). The first
+         * capture is never stale. Instantaneous suppliers cannot detect a
+         * frozen Hub cache.
+         */
         public Builder staleAfterNanos(long staleAfterNanos) {
             this.staleAfterNanos = staleAfterNanos;
             return this;

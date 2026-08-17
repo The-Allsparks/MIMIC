@@ -26,5 +26,6 @@
 | **Synchronization** | Keeping multiple actuators consistent. |
 | **Anti-racking** | Preventing structural twist from side-to-side disagreement. |
 | **Degraded operation** | Reduced capability while remaining as safe as possible. |
+| **STALE** | Observer not called within `staleAfterNanos` (loop-call gap). Not Hub sample age and not “encoder disconnected.” Frozen supplier values on a timely loop stay `VALID`. |
 
 Student exercise: pick three terms and give an elevator example for each.

@@ -113,6 +113,8 @@ See [build-versus-adopt](docs/mechanism-control/build-vs-adopt.md) and [research
 | [References](docs/mechanism-control/references.md) | Citation table |
 | [Examples](examples/README.md) | Integration sketches |
 | [Phase 0 file plan](docs/mechanism-control/phase-0-plan.md) | Exact implementation plan |
+| [Initial deep audit](docs/audits/initial-deep-audit.md) | 2026-08-17 architecture, safety, and backlog audit |
+| [Priority ledger](docs/audits/priority-ledger.md) | Orchestrator work order |
 | [Assessment](docs/mechanism-control/assessment.md) | Benefit vs complexity judgment |
 | [Risks](docs/mechanism-control/risks.md) | Open questions |
 | [Elevator target](docs/mechanism-control/elevator-target.md) | Known vs unknown Allsparks hardware |

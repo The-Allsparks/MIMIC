@@ -19,6 +19,8 @@ FTC teams often copy `RUN_TO_POSITION`, a PID loop, or a state machine into ever
 4. Follow [phases.md](phases.md). Enable one phase at a time.
 5. Use [testing.md](testing.md) before touching a real elevator.
 
+Maintainers: the [initial deep audit](../audits/initial-deep-audit.md) and [priority ledger](../audits/priority-ledger.md) record current maturity and work order.
+
 ## Teachable question for Phase 0
 
 **What information does safe mechanism control require?**

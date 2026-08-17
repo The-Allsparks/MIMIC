@@ -2,7 +2,7 @@
 
 ## Unit tests (this scaffold)
 
-Covered now: unit conversion, direction, observer snapshots, missing/disconnected sensors, disagreement, goal rejection, feature flags, AMPER unrestricted grant, loop overhead, **zero actuator writes**, documentation links.
+Covered now: unit conversion, direction, observer snapshots, missing/disconnected sensors, disagreement, observer-liveness `STALE` (`staleAfterNanos`), goal rejection, feature flags, AMPER unrestricted grant, loop overhead, **zero actuator writes**, documentation links.
 
 Later phases must add: debounce, timeout, hard/soft limits, motion away from a limit, deferral, profiles, saturation, anti-windup, sync, interlocks, fault severity, bounded recovery, AMPER clip handling.
 
@@ -37,4 +37,5 @@ Each card requires: adult supervision, supports/restraints, exclusion zone, e-st
 1. Run `.\gradlew.bat test`.
 2. Export CSV from `MimicEventLogger` in a unit test.
 3. Graph `pos` vs time and mark a `SENSOR_INVALID` row.
-4. Explain why `NO_ACTIVE_CONTROL` is the correct Phase 0 goal result.
+4. From `MechanismObserverTest.gapAboveThresholdMarksNumericSamplesStale`, explain why `STALE` is observer liveness (a slow `capture()` gap), not a frozen Hub encoder.
+5. Explain why `NO_ACTIVE_CONTROL` is the correct Phase 0 goal result.

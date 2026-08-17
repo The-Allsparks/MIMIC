@@ -16,7 +16,7 @@ Implemented in this repository: **Phase 0 only.** Later phases are documented, n
 
 - [x] No motor or servo output changes occur (`FakeActuator` write counts stay 0).
 - [x] Sensor units and directions are documented (`MechanismUnits`).
-- [x] Stale or unsupported measurements degrade cleanly.
+- [x] Stale or unsupported measurements degrade cleanly. Phase 0 `STALE` is observer liveness (gap since the previous `capture()` start), not Hub sample age. Frozen supplier values on a timely loop stay `VALID`. `staleAfterNanos <= 0` disables the check (default).
 - [x] Loop overhead is measured (`LoopOverheadStats`).
 - [x] Build-versus-adopt assessment is complete.
 

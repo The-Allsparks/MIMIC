@@ -40,3 +40,5 @@ jobs:
           test -f docs/mechanism-control/architecture.md
           test -f docs/mechanism-control/phases.md
           test -f docs/mechanism-control/references.md
+          test -f docs/audits/initial-deep-audit.md
+          test -f docs/audits/priority-ledger.md
