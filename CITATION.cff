@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: "MIMIC: Mechanism Integration, Motion, Interlocks, and Calibration for FTC"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - name: "The Allsparks"
+    alias: "FTC Team 36117"
+    website: "https://github.com/The-Allsparks"
+repository-code: "https://github.com/The-Allsparks/MIMIC"
+url: "https://github.com/The-Allsparks/MIMIC"
+abstract: >-
+  MIMIC is a phased mechanism lifecycle, motion, calibration, interlock, and
+  safety library for FIRST Tech Challenge robots. It begins with passive
+  observation of mechanism sensors and commands and progresses through optional
+  active-control phases that remain disabled until validated.
+keywords:
+  - FIRST Tech Challenge
+  - FTC
+  - mechanism control
+  - motion profiling
+  - homing
+  - safety
+  - robotics
+license: MIT
+version: "0.1.0-SNAPSHOT"
+date-released: "2026-08-17"
