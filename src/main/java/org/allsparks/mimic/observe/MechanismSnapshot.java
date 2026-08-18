@@ -5,14 +5,17 @@ import java.util.Objects;
 /**
  * Immutable once-per-loop mechanism snapshot. Never used to write hardware.
  *
+ * Position and velocity are {@link SensorSample}s: value, unit, and
+ * {@link MeasurementValidity} (including observer-liveness {@code STALE}).
+ * {@link #position()} and {@link #velocity()} delegate to those samples.
  * Position, velocity, and acceleration share {@link #positionUnitSymbol()}.
  * Effort values are dimensionless in {@code [-1, 1]}. Current is amperes or
  * {@link Double#NaN} when unsupported.
  */
 public final class MechanismSnapshot {
     private final String mechanismId;
-    private final double position;
-    private final double velocity;
+    private final SensorSample positionSample;
+    private final SensorSample velocitySample;
     private final double acceleration;
     private final String positionUnitSymbol;
     private final double requestedOutput;
@@ -29,8 +32,8 @@ public final class MechanismSnapshot {
 
     public MechanismSnapshot(
             String mechanismId,
-            double position,
-            double velocity,
+            SensorSample positionSample,
+            SensorSample velocitySample,
             double acceleration,
             String positionUnitSymbol,
             double requestedOutput,
@@ -45,8 +48,8 @@ public final class MechanismSnapshot {
             long timestampNanos,
             long loopDurationNanos) {
         this.mechanismId = mechanismId == null ? "" : mechanismId;
-        this.position = position;
-        this.velocity = velocity;
+        this.positionSample = Objects.requireNonNull(positionSample, "positionSample");
+        this.velocitySample = Objects.requireNonNull(velocitySample, "velocitySample");
         this.acceleration = acceleration;
         this.positionUnitSymbol = positionUnitSymbol == null ? "" : positionUnitSymbol;
         this.requestedOutput = requestedOutput;
@@ -66,12 +69,22 @@ public final class MechanismSnapshot {
         return mechanismId;
     }
 
+    /** Canonical position; convenience delegate of {@link #positionSample()}. */
     public double position() {
-        return position;
+        return positionSample.value();
     }
 
+    /** Canonical velocity; convenience delegate of {@link #velocitySample()}. */
     public double velocity() {
-        return velocity;
+        return velocitySample.value();
+    }
+
+    public SensorSample positionSample() {
+        return positionSample;
+    }
+
+    public SensorSample velocitySample() {
+        return velocitySample;
     }
 
     public double acceleration() {

@@ -65,6 +65,8 @@ class MimicSessionTest {
         assertFalse(snapshot.upperLimit().asserted());
         assertEquals("mm", snapshot.positionUnitSymbol());
         assertTrue(session.logger().exportCsv().contains("pos="));
+        assertTrue(session.logger().exportCsv().contains("posValid=VALID"));
+        assertTrue(session.logger().exportCsv().contains("velValid=VALID"));
     }
 
     @Test

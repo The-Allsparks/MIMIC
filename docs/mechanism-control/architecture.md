@@ -57,6 +57,10 @@ Captures once per loop: position, velocity, acceleration estimate, commanded/app
 
 **Must not command hardware.**
 
+## `MechanismSnapshot`
+
+Immutable once-per-loop observation. Never used to write hardware. Position and velocity are `SensorSample`s (value, unit, and `MeasurementValidity`, including observer-liveness `STALE`). Scalar `position()` / `velocity()` delegate to the sample values. Absolute and redundant channels are also `SensorSample`s.
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.
