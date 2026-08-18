@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import org.allsparks.mimic.observe.LimitSwitchSample;
 import org.allsparks.mimic.observe.MechanismSnapshot;
 
 /**
@@ -14,7 +15,9 @@ import org.allsparks.mimic.observe.MechanismSnapshot;
  * Does not command hardware. Field names are TRACE-compatible (stable keys).
  * Observation export keeps {@code pos} / {@code vel} and additively includes
  * {@code posValid} / {@code velValid} as {@link org.allsparks.mimic.observe.MeasurementValidity}
- * enum names.
+ * enum names. Limit channels keep {@code lower} / {@code upper} and add
+ * {@code lowerValid} / {@code upperValid} the same way; unusable asserted
+ * state is exported as {@code n/a} instead of a naked {@code false}.
  */
 public final class MimicEventLogger {
     private final int capacity;
@@ -51,8 +54,10 @@ public final class MimicEventLogger {
         fields.put("reqOut", format(snapshot.requestedOutput()));
         fields.put("appOut", format(snapshot.appliedOutput()));
         fields.put("amps", format(snapshot.currentAmps()));
-        fields.put("lower", Boolean.toString(snapshot.lowerLimit().asserted()));
-        fields.put("upper", Boolean.toString(snapshot.upperLimit().asserted()));
+        fields.put("lower", formatAsserted(snapshot.lowerLimit()));
+        fields.put("lowerValid", snapshot.lowerLimit().validity().name());
+        fields.put("upper", formatAsserted(snapshot.upperLimit()));
+        fields.put("upperValid", snapshot.upperLimit().validity().name());
         fields.put("sensorValid", Boolean.toString(snapshot.sensorValid()));
         fields.put("disagree", format(snapshot.disagreement()));
         fields.put("loopNs", Long.toString(snapshot.loopDurationNanos()));
@@ -87,5 +92,12 @@ public final class MimicEventLogger {
             return "NaN";
         }
         return String.format(Locale.US, "%.4f", value);
+    }
+
+    private static String formatAsserted(LimitSwitchSample sample) {
+        if (!sample.isUsable()) {
+            return "n/a";
+        }
+        return Boolean.toString(sample.asserted());
     }
 }

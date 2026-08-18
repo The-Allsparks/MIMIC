@@ -14,6 +14,7 @@ import org.allsparks.mimic.log.MimicEvent;
 import org.allsparks.mimic.log.MimicEventLogger;
 import org.allsparks.mimic.log.MimicEventType;
 import org.allsparks.mimic.observe.MeasurementValidity;
+import org.allsparks.mimic.observe.MechanismObserver;
 import org.allsparks.mimic.observe.MechanismSnapshot;
 import org.allsparks.mimic.units.DirectionSign;
 import org.allsparks.mimic.units.MechanismUnits;
@@ -67,6 +68,16 @@ class MimicSessionTest {
         assertTrue(session.logger().exportCsv().contains("pos="));
         assertTrue(session.logger().exportCsv().contains("posValid=VALID"));
         assertTrue(session.logger().exportCsv().contains("velValid=VALID"));
+        MimicEvent observation = observationEvent(session);
+        assertEquals("true", observation.fields().get("lower"));
+        assertEquals("VALID", observation.fields().get("lowerValid"));
+        assertEquals("false", observation.fields().get("upper"));
+        assertEquals("VALID", observation.fields().get("upperValid"));
+        String csv = session.logger().exportCsv();
+        assertTrue(csv.contains("lower=true"));
+        assertTrue(csv.contains("lowerValid=VALID"));
+        assertTrue(csv.contains("upper=false"));
+        assertTrue(csv.contains("upperValid=VALID"));
     }
 
     @Test
@@ -87,9 +98,43 @@ class MimicSessionTest {
         AtomicLong time = new AtomicLong(0L);
         FakeMechanismHardware hardware = hardware(time);
         hardware.lowerLimit().disconnect();
-        MechanismSnapshot snapshot = MimicSession.create(hardware.observer()).observe();
+        MimicSession session = MimicSession.create(hardware.observer());
+        MechanismSnapshot snapshot = session.observe();
         assertEquals(MeasurementValidity.MISSING, snapshot.lowerLimit().validity());
         assertFalse(snapshot.lowerLimit().asserted());
+        MimicEvent observation = observationEvent(session);
+        assertEquals("n/a", observation.fields().get("lower"));
+        assertEquals("MISSING", observation.fields().get("lowerValid"));
+        String csv = session.logger().exportCsv();
+        assertTrue(csv.contains("lowerValid=MISSING"));
+        assertTrue(csv.contains("lower=n/a"));
+        assertFalse(csv.contains("lower=false"));
+    }
+
+    @Test
+    void omittedLimitSwitchExportsUnsupported() {
+        AtomicLong time = new AtomicLong(0L);
+        MechanismObserver observer = MechanismObserver.builder(
+                        "elev",
+                        time::get,
+                        MechanismUnits.linearMillimeters("elev", 10.0, DirectionSign.POSITIVE))
+                .ticks(() -> 0.0)
+                .ticksPerSecond(() -> 0.0)
+                .build();
+        MimicSession session = MimicSession.create(observer);
+        MechanismSnapshot snapshot = session.observe();
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.lowerLimit().validity());
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.upperLimit().validity());
+        MimicEvent observation = observationEvent(session);
+        assertEquals("n/a", observation.fields().get("lower"));
+        assertEquals("UNSUPPORTED", observation.fields().get("lowerValid"));
+        assertEquals("n/a", observation.fields().get("upper"));
+        assertEquals("UNSUPPORTED", observation.fields().get("upperValid"));
+        String csv = session.logger().exportCsv();
+        assertTrue(csv.contains("lowerValid=UNSUPPORTED"));
+        assertTrue(csv.contains("upperValid=UNSUPPORTED"));
+        assertTrue(csv.contains("lower=n/a"));
+        assertTrue(csv.contains("upper=n/a"));
     }
 
     @Test
@@ -151,5 +196,14 @@ class MimicSessionTest {
                 "elev",
                 time::get,
                 MechanismUnits.linearMillimeters("elev", 10.0, DirectionSign.POSITIVE));
+    }
+
+    private static MimicEvent observationEvent(MimicSession session) {
+        for (MimicEvent event : session.logger().snapshot()) {
+            if ("observation".equals(event.message())) {
+                return event;
+            }
+        }
+        throw new AssertionError("missing observation event");
     }
 }

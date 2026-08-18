@@ -38,4 +38,5 @@ Each card requires: adult supervision, supports/restraints, exclusion zone, e-st
 2. Export CSV from `MimicEventLogger` in a unit test.
 3. Graph `pos` vs time and mark a `SENSOR_INVALID` row.
 4. From `MechanismObserverTest.gapAboveThresholdMarksNumericSamplesStale`, explain why `STALE` is observer liveness (a slow `capture()` gap), not a frozen Hub encoder. Mark a CSV row with `posValid=STALE` versus `MISSING`.
-5. Explain why `NO_ACTIVE_CONTROL` is the correct Phase 0 goal result.
+5. From `MimicSessionTest.disconnectedLimitSwitchIsMissing`, mark a CSV row with `lowerValid=MISSING` and `lower=n/a`. Contrast that with a healthy `lower=false` that also has `lowerValid=VALID`.
+6. Explain why `NO_ACTIVE_CONTROL` is the correct Phase 0 goal result.
