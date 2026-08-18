@@ -123,6 +123,15 @@ public final class MechanismSnapshot {
         return redundantPosition;
     }
 
+    /**
+     * Aggregate health of required wired channels, not “every channel exists.”
+     *
+     * True when primary position is usable, velocity is either
+     * {@link MeasurementValidity#UNSUPPORTED} or usable, and redundant
+     * encoders are not disagreeing. Omitted {@code ticks} keeps this false.
+     * {@link #absoluteSensor()} is optional and does not substitute for
+     * primary pose.
+     */
     public boolean sensorValid() {
         return sensorValid;
     }

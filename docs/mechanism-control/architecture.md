@@ -55,6 +55,8 @@ Phase 0/1 stop after snapshot + log. Team code still owns `setPower`.
 
 Captures once per loop: position, velocity, acceleration estimate, commanded/applied output, current where available, limits, absolute sensor, calibration observation, freshness, loop timing, redundant disagreement.
 
+`sensorValid` is aggregate health of **required wired channels**, not “every channel exists.” Primary pose is required (omitted `ticks` keeps it false). Velocity is required only if `ticksPerSecond` is wired; `UNSUPPORTED` velocity does not clear the flag. Analog-only mechanisms wire the mapped analog value as `ticks` and omit velocity; `absoluteSensor` is an optional extra channel, not a substitute primary pose.
+
 **Must not command hardware.**
 
 ## `MechanismSnapshot`

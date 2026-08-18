@@ -15,6 +15,10 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 - Source-backed mechanism-control research, build-versus-adopt decision, architecture, phased roadmap, and student documentation.
 - CI for compile, unit tests, and relative documentation link checks.
 
+### Changed
+
+- `sensorValid` means required wired channels are usable and not disagreeing. Velocity is required only when `ticksPerSecond` is wired (`UNSUPPORTED` velocity does not clear the flag). Analog-only observation wires mapped analog as `ticks`; omitted ticks still keeps the snapshot invalid ([#27](https://github.com/The-Allsparks/MIMIC/issues/27)).
+
 ### Safety
 
 - All motor and servo output features remain disabled by default.

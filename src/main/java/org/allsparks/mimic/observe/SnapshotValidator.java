@@ -26,9 +26,11 @@ public final class SnapshotValidator {
      *
      * Sample validity is returned first so {@link MeasurementValidity#STALE}
      * is distinguishable from {@link MeasurementValidity#MISSING}. Snapshot
-     * disagreement is reported only when both encoders are usable and the
-     * observer already cleared {@link MechanismSnapshot#sensorValid()}
-     * (offset above threshold). Range is applied only when the sample is
+     * disagreement is reported only when both encoders are usable, velocity is
+     * {@link MeasurementValidity#UNSUPPORTED} or usable, and the observer
+     * already cleared {@link MechanismSnapshot#sensorValid()} (offset above
+     * threshold). Wired {@code MISSING} or {@code STALE} velocity is not
+     * classified as disagreement. Range is applied only when the sample is
      * {@link MeasurementValidity#VALID}.
      */
     public static MeasurementValidity classifyPosition(MechanismSnapshot snapshot, double min, double max) {
@@ -45,8 +47,10 @@ public final class SnapshotValidator {
         // Disagreement is snapshot-level: both encoders usable and the observer
         // already invalidated the aggregate (offset above threshold). A nonzero
         // offset below the threshold must not be classified as DISAGREEING.
+        // UNSUPPORTED velocity is optional and does not explain a false
+        // sensorValid; MISSING/STALE velocity does, so those are not DISAGREEING.
         if (!snapshot.sensorValid()
-                && snapshot.velocitySample().isUsable()
+                && velocityOptionalOrUsable(snapshot)
                 && snapshot.redundantPosition().isUsable()) {
             return MeasurementValidity.DISAGREEING;
         }
@@ -54,5 +58,16 @@ public final class SnapshotValidator {
             return MeasurementValidity.OUT_OF_RANGE;
         }
         return MeasurementValidity.VALID;
+    }
+
+    /**
+     * {@link MeasurementValidity#UNSUPPORTED} velocity is not required for
+     * aggregate health. Wired {@code MISSING} or {@code STALE} velocity still
+     * clears {@link MechanismSnapshot#sensorValid()} on its own, so it must
+     * not be classified as encoder disagreement.
+     */
+    private static boolean velocityOptionalOrUsable(MechanismSnapshot snapshot) {
+        return snapshot.velocitySample().validity() == MeasurementValidity.UNSUPPORTED
+                || snapshot.velocitySample().isUsable();
     }
 }
