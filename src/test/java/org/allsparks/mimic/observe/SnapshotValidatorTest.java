@@ -63,6 +63,7 @@ class SnapshotValidatorTest {
         assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.positionSample().validity());
         assertEquals(MeasurementValidity.UNSUPPORTED,
                 SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
+        assertFalse(snapshot.sensorValid());
         assertFalse(SnapshotValidator.hasUsablePosition(snapshot));
     }
 
@@ -98,6 +99,24 @@ class SnapshotValidatorTest {
                 .capture();
         assertEquals(MeasurementValidity.VALID, snapshot.positionSample().validity());
         assertEquals(MeasurementValidity.DISAGREEING,
+                SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
+    }
+
+    @Test
+    void classifyPositionDoesNotTreatMissingVelocityAsDisagreement() {
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 1_000L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> 100.0)
+                .ticksPerSecond(() -> Double.NaN)
+                .redundantTicks(() -> 100.0)
+                .disagreementThreshold(10.0)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.MISSING, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+        assertEquals(MeasurementValidity.VALID,
                 SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
     }
 
@@ -138,16 +157,37 @@ class SnapshotValidatorTest {
     }
 
     @Test
+    void classifyPositionReportsDisagreeingWhenPositionOnlyRedundantOffset() {
+        AtomicReference<Double> primary = new AtomicReference<>(100.0);
+        AtomicReference<Double> redundant = new AtomicReference<>(160.0);
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 1_000L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(primary::get)
+                .redundantTicks(redundant::get)
+                .disagreementThreshold(10.0)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.positionSample().validity());
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+        assertEquals(MeasurementValidity.DISAGREEING,
+                SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
+    }
+
+    @Test
     void hasUsablePositionFollowsPositionSampleNotAggregateSensorValid() {
         MechanismSnapshot snapshot = MechanismObserver.builder(
                         "elev",
                         () -> 0L,
                         MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
                 .ticks(() -> 100.0)
+                .ticksPerSecond(() -> Double.NaN)
                 .build()
                 .capture();
         assertEquals(MeasurementValidity.VALID, snapshot.positionSample().validity());
-        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.velocitySample().validity());
+        assertEquals(MeasurementValidity.MISSING, snapshot.velocitySample().validity());
         assertFalse(snapshot.sensorValid());
         assertTrue(SnapshotValidator.hasUsablePosition(snapshot));
         assertEquals(MeasurementValidity.VALID,

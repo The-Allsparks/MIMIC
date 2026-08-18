@@ -162,6 +162,8 @@ A position-only mechanism (potentiometer, analog absolute encoder, some servos) 
 
 **Evidence:** `MechanismObserver.capture()`; `RevAnalogSensorObserver` exists for exactly this hardware.
 
+**Status (#27):** `sensorValid` is usable primary pose, `UNSUPPORTED` or usable velocity, and no disagreement. Omitted `ticksPerSecond` no longer clears the flag. Omitted `ticks` still does. Analog-only observation wires the mapped analog value as `ticks`; `absoluteSensor` is not a substitute primary pose. `classifyPosition` reports `DISAGREEING` for position-only redundant offset; wired `MISSING`/`STALE` velocity is not treated as disagreement.
+
 ### C3 — Missing limit switches log as not asserted — MEDIUM / CORRECTNESS
 
 `LimitSwitchSample.missing()` sets `asserted = false`. `MimicEventLogger.recordObservation` logs `Boolean.toString(snapshot.lowerLimit().asserted())` without validity. A disconnected switch is exported as `lower=false`.
@@ -394,7 +396,7 @@ MIMIC is ready to be a **teaching and observation scaffold** after PR #1 is acce
 | R1 | HIGH | SECURITY | Human decision | [#31](https://github.com/The-Allsparks/MIMIC/issues/31) |
 | S3 | HIGH | SAFETY | Process | #31 + CONTRIBUTING |
 | A1 | MEDIUM | ARCHITECTURE | Yes after C1 or parallel | [#26](https://github.com/The-Allsparks/MIMIC/issues/26) |
-| C2 | MEDIUM | CORRECTNESS | Yes | [#27](https://github.com/The-Allsparks/MIMIC/issues/27) |
+| C2 | MEDIUM | CORRECTNESS | Implemented locally (#27) | [#27](https://github.com/The-Allsparks/MIMIC/issues/27) |
 | C3 | MEDIUM | CORRECTNESS | Yes | [#28](https://github.com/The-Allsparks/MIMIC/issues/28) |
 | U1 / D2 | MEDIUM | USABILITY | Yes | [#29](https://github.com/The-Allsparks/MIMIC/issues/29); full telemetry #6 |
 | P1 | MEDIUM | PERFORMANCE | Research | [#32](https://github.com/The-Allsparks/MIMIC/issues/32) |

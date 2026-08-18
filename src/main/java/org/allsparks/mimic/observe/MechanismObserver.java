@@ -72,7 +72,21 @@ public final class MechanismObserver {
         return new Builder(mechanismId, clock, units);
     }
 
-    /** Read sensors once and return an immutable snapshot. Does not write hardware. */
+    /**
+     * Read sensors once and return an immutable snapshot. Does not write hardware.
+     *
+     * {@link MechanismSnapshot#sensorValid()} is true when required wired
+     * channels are usable and redundant encoders are not disagreeing. Primary
+     * position is required: omitted {@code ticks} is
+     * {@link MeasurementValidity#UNSUPPORTED} and keeps the flag false.
+     * Velocity is required only when {@code ticksPerSecond} is wired;
+     * {@code UNSUPPORTED} velocity does not clear the flag. Wired but
+     * {@code MISSING}, {@code STALE}, NaN, or throwing velocity still does.
+     * Analog-only mechanisms wire the mapped analog value as {@code ticks}
+     * and omit {@code ticksPerSecond}; {@code absoluteSensor} is an optional
+     * extra channel, not a substitute primary pose. Velocity is never
+     * inferred from position.
+     */
     public MechanismSnapshot capture() {
         long start = clock.nanoTime();
         SensorSample position = readPosition(start);
@@ -91,7 +105,11 @@ public final class MechanismObserver {
             disagreement = Math.abs(position.value() - redundant.value());
             disagreeing = disagreement > disagreementThreshold;
         }
-        boolean sensorValid = position.isUsable() && velocity.isUsable() && !disagreeing;
+        boolean sensorValid =
+                position.isUsable()
+                        && (velocity.validity() == MeasurementValidity.UNSUPPORTED
+                                || velocity.isUsable())
+                        && !disagreeing;
         long duration = Math.max(0L, clock.nanoTime() - start);
         MechanismSnapshot snapshot = new MechanismSnapshot(
                 mechanismId,

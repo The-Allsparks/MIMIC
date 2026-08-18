@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import org.allsparks.mimic.adapters.rev.RevAnalogSensorObserver;
 import org.allsparks.mimic.clock.MimicClock;
 import org.allsparks.mimic.units.DirectionSign;
 import org.allsparks.mimic.units.MechanismUnits;
@@ -157,6 +158,126 @@ class MechanismObserverTest {
         assertEquals(first.absoluteSensor().value(), second.absoluteSensor().value(), 1e-9);
         assertPrimaryChannels(second, MeasurementValidity.VALID);
         assertTrue(second.sensorValid());
+    }
+
+    @Test
+    void positionOnlyObserverIsSensorValidWhenTicksRead() {
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 0L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> 100.0)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.positionSample().validity());
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.velocitySample().validity());
+        assertTrue(Double.isNaN(snapshot.acceleration()));
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void analogMappedAsTicksWithoutVelocityIsSensorValid() {
+        RevAnalogSensorObserver analog = new RevAnalogSensorObserver("pot", () -> 100.0, "mm");
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 0L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> analog.read(0L).value())
+                .build()
+                .capture();
+        assertEquals(100.0, snapshot.position(), 1e-9);
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.velocitySample().validity());
+        assertTrue(snapshot.sensorValid());
+    }
+
+    @Test
+    void missingRequiredPositionStillInvalidatesWithoutVelocity() {
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "arm",
+                        () -> 10L,
+                        MechanismUnits.rotaryRadians("arm", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> Double.NaN)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.MISSING, snapshot.positionSample().validity());
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+    }
+
+    @Test
+    void unsupportedPositionKeepsSensorValidFalse() {
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "pot",
+                        () -> 0L,
+                        MechanismUnits.linearMillimeters("pot", 1.0, DirectionSign.POSITIVE))
+                .absoluteSensor(() -> 12.5, "mm")
+                .ticksPerSecond(() -> 0.0)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.positionSample().validity());
+        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertFalse(snapshot.sensorValid());
+    }
+
+    @Test
+    void wiredMissingVelocityStillClearsSensorValid() {
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 0L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> 100.0)
+                .ticksPerSecond(() -> Double.NaN)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.VALID, snapshot.positionSample().validity());
+        assertEquals(MeasurementValidity.MISSING, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+    }
+
+    @Test
+    void wiredStaleVelocityStillClearsSensorValid() {
+        AtomicLong time = new AtomicLong(1_000_000L);
+        MechanismObserver observer = livenessObserver(time, 50_000_000L);
+        observer.capture();
+        time.addAndGet(50_000_001L);
+        MechanismSnapshot snapshot = observer.capture();
+        assertEquals(MeasurementValidity.STALE, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+    }
+
+    @Test
+    void wiredThrowingVelocityStillClearsSensorValid() {
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 0L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(() -> 100.0)
+                .ticksPerSecond(() -> {
+                    throw new IllegalStateException("disconnected velocity");
+                })
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.MISSING, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+    }
+
+    @Test
+    void positionOnlyDisagreementStillClearsSensorValid() {
+        AtomicReference<Double> primary = new AtomicReference<>(100.0);
+        AtomicReference<Double> redundant = new AtomicReference<>(160.0);
+        MechanismSnapshot snapshot = MechanismObserver.builder(
+                        "elev",
+                        () -> 1_000L,
+                        MechanismUnits.linearMillimeters("elev", 1.0, DirectionSign.POSITIVE))
+                .ticks(primary::get)
+                .redundantTicks(redundant::get)
+                .disagreementThreshold(10.0)
+                .build()
+                .capture();
+        assertEquals(MeasurementValidity.UNSUPPORTED, snapshot.velocitySample().validity());
+        assertFalse(snapshot.sensorValid());
+        assertEquals(MeasurementValidity.DISAGREEING,
+                SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
     }
 
     private static void assertPrimaryChannels(MechanismSnapshot snapshot, MeasurementValidity expected) {

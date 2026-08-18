@@ -26,6 +26,7 @@
 | **Synchronization** | Keeping multiple actuators consistent. |
 | **Anti-racking** | Preventing structural twist from side-to-side disagreement. |
 | **Degraded operation** | Reduced capability while remaining as safe as possible. |
+| **sensorValid** | Aggregate: required wired channels usable and not disagreeing. Primary pose is required (omitted `ticks` keeps it false). Velocity is required only if `ticksPerSecond` is wired. |
 | **STALE** | Observer not called within `staleAfterNanos` (loop-call gap). Not Hub sample age and not “encoder disconnected.” Frozen supplier values on a timely loop stay `VALID`. |
 
 Student exercise: pick three terms and give an elevator example for each.
