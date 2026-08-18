@@ -95,8 +95,8 @@ public final class MechanismObserver {
         long duration = Math.max(0L, clock.nanoTime() - start);
         MechanismSnapshot snapshot = new MechanismSnapshot(
                 mechanismId,
-                position.value(),
-                velocity.value(),
+                position,
+                velocity,
                 acceleration,
                 units.canonicalUnitSymbol(),
                 requested,

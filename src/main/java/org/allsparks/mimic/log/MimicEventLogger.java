@@ -12,6 +12,9 @@ import org.allsparks.mimic.observe.MechanismSnapshot;
 /**
  * Records time-correlated mechanism events. Exportable for offline analysis.
  * Does not command hardware. Field names are TRACE-compatible (stable keys).
+ * Observation export keeps {@code pos} / {@code vel} and additively includes
+ * {@code posValid} / {@code velValid} as {@link org.allsparks.mimic.observe.MeasurementValidity}
+ * enum names.
  */
 public final class MimicEventLogger {
     private final int capacity;
@@ -40,8 +43,10 @@ public final class MimicEventLogger {
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("id", snapshot.mechanismId());
         fields.put("pos", format(snapshot.position()));
+        fields.put("posValid", snapshot.positionSample().validity().name());
         fields.put("unit", snapshot.positionUnitSymbol());
         fields.put("vel", format(snapshot.velocity()));
+        fields.put("velValid", snapshot.velocitySample().validity().name());
         fields.put("acc", format(snapshot.acceleration()));
         fields.put("reqOut", format(snapshot.requestedOutput()));
         fields.put("appOut", format(snapshot.appliedOutput()));

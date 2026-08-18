@@ -47,6 +47,9 @@ class MechanismObserverTest {
         MechanismSnapshot snapshot = observer.capture();
         assertFalse(snapshot.sensorValid());
         assertTrue(Double.isNaN(snapshot.position()));
+        assertEquals(MeasurementValidity.MISSING, snapshot.positionSample().validity());
+        assertEquals(MeasurementValidity.MISSING,
+                SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
         assertFalse(SnapshotValidator.hasUsablePosition(snapshot));
     }
 
@@ -68,10 +71,10 @@ class MechanismObserverTest {
     void staleCheckDisabledByDefaultDoesNotMarkStale() {
         AtomicLong time = new AtomicLong(1_000_000L);
         MechanismObserver observer = livenessObserver(time, 0L);
-        assertEquals(MeasurementValidity.VALID, observer.capture().absoluteSensor().validity());
+        assertPrimaryChannels(observer.capture(), MeasurementValidity.VALID);
         time.addAndGet(5_000_000_000L);
         MechanismSnapshot snapshot = observer.capture();
-        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertPrimaryChannels(snapshot, MeasurementValidity.VALID);
         assertTrue(snapshot.sensorValid());
     }
 
@@ -82,7 +85,7 @@ class MechanismObserverTest {
         observer.capture();
         time.addAndGet(5_000_000_000L);
         MechanismSnapshot snapshot = observer.capture();
-        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertPrimaryChannels(snapshot, MeasurementValidity.VALID);
         assertTrue(snapshot.sensorValid());
     }
 
@@ -91,7 +94,7 @@ class MechanismObserverTest {
         AtomicLong time = new AtomicLong(9_000_000_000L);
         MechanismObserver observer = livenessObserver(time, 50_000_000L);
         MechanismSnapshot snapshot = observer.capture();
-        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertPrimaryChannels(snapshot, MeasurementValidity.VALID);
         assertTrue(snapshot.sensorValid());
     }
 
@@ -102,7 +105,9 @@ class MechanismObserverTest {
         observer.capture();
         time.addAndGet(50_000_001L);
         MechanismSnapshot snapshot = observer.capture();
-        assertEquals(MeasurementValidity.STALE, snapshot.absoluteSensor().validity());
+        assertPrimaryChannels(snapshot, MeasurementValidity.STALE);
+        assertEquals(MeasurementValidity.STALE,
+                SnapshotValidator.classifyPosition(snapshot, -1000.0, 1000.0));
         assertEquals(12.5, snapshot.absoluteSensor().value(), 1e-9);
         assertFalse(snapshot.sensorValid());
     }
@@ -114,7 +119,7 @@ class MechanismObserverTest {
         observer.capture();
         time.addAndGet(50_000_000L);
         MechanismSnapshot snapshot = observer.capture();
-        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertPrimaryChannels(snapshot, MeasurementValidity.VALID);
         assertTrue(snapshot.sensorValid());
     }
 
@@ -125,7 +130,7 @@ class MechanismObserverTest {
         observer.capture();
         time.addAndGet(49_999_999L);
         MechanismSnapshot snapshot = observer.capture();
-        assertEquals(MeasurementValidity.VALID, snapshot.absoluteSensor().validity());
+        assertPrimaryChannels(snapshot, MeasurementValidity.VALID);
         assertTrue(snapshot.sensorValid());
     }
 
@@ -135,10 +140,10 @@ class MechanismObserverTest {
         MechanismObserver observer = livenessObserver(time, 50_000_000L);
         observer.capture();
         time.addAndGet(50_000_001L);
-        assertEquals(MeasurementValidity.STALE, observer.capture().absoluteSensor().validity());
+        assertPrimaryChannels(observer.capture(), MeasurementValidity.STALE);
         time.addAndGet(1_000_000L);
         MechanismSnapshot recovered = observer.capture();
-        assertEquals(MeasurementValidity.VALID, recovered.absoluteSensor().validity());
+        assertPrimaryChannels(recovered, MeasurementValidity.VALID);
         assertTrue(recovered.sensorValid());
     }
 
@@ -150,8 +155,14 @@ class MechanismObserverTest {
         time.addAndGet(20_000_000L);
         MechanismSnapshot second = observer.capture();
         assertEquals(first.absoluteSensor().value(), second.absoluteSensor().value(), 1e-9);
-        assertEquals(MeasurementValidity.VALID, second.absoluteSensor().validity());
+        assertPrimaryChannels(second, MeasurementValidity.VALID);
         assertTrue(second.sensorValid());
+    }
+
+    private static void assertPrimaryChannels(MechanismSnapshot snapshot, MeasurementValidity expected) {
+        assertEquals(expected, snapshot.positionSample().validity());
+        assertEquals(expected, snapshot.velocitySample().validity());
+        assertEquals(expected, snapshot.absoluteSensor().validity());
     }
 
     private static MechanismObserver livenessObserver(AtomicLong time, long staleAfterNanos) {
