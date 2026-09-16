@@ -4,7 +4,7 @@ Living work-order for the orchestrator. Update after each issue or pull request.
 
 | Field | Value |
 |-------|--------|
-| **Updated** | 2026-09-15 |
+| **Updated** | 2026-09-16 |
 | **Audited SHA** | `5847806f094f846cb3e8a4adf7ad0b355c4034fb` |
 | **Current implementation stream** | `feature/issue-28-limit-validity-log` from `main` (`3dd761f`; PR #41 / #27 merged) |
 | **Automatic merge** | **false** — human approval required |

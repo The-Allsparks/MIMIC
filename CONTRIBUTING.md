@@ -16,7 +16,7 @@ cd MIMIC
 2. Phase 0 and Phase 1 must remain behavior-neutral for actuators.
 3. Distinguish **verified fact**, **engineering inference**, and **untested hypothesis** in documentation.
 4. Never describe an FRC motor-controller capability as a current FTC capability without evidence.
-5. Do not invent robot hardware maps, season game-piece types, or BumbleBee class names in this library. Those belong in TeamCode ([library-vs-teamcode.md](docs/mechanism-control/library-vs-teamcode.md)).
+5. Do not invent robot hardware maps, season game-piece types, or BumbleBee class names in this library. Those belong in TeamCode ([library-vs-teamcode.md](docs/mechanism-control/library-vs-teamcode.md)). Generic families and constructs in `org.allsparks.mimic.templates` are allowed; do not name them after a season or robot.
 6. Do not commit secrets, Wi-Fi passwords, tokens, or student PII.
 7. Do not add NextControl, YAMS, or WPILib as compile dependencies without a documented license review.
 

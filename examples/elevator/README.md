@@ -1,17 +1,19 @@
 # Linear mechanism observation sketch (Phase 0)
 
-Generic example of observing one linear axis. It is **not** BumbleBee hardware and not a promise that Allsparks will build an elevator. Robot names and gear ratios belong in TeamCode. See [library-vs-teamcode.md](../../docs/mechanism-control/library-vs-teamcode.md).
+Generic **lift / elevator** construct. It is **not** BumbleBee hardware and not a promise that Allsparks will build an elevator. Robot names and gear ratios belong in TeamCode. See [library-vs-teamcode.md](../../docs/mechanism-control/library-vs-teamcode.md) and [mechanism-kinds.md](../../docs/mechanism-control/mechanism-kinds.md).
 
 This sketch shows **passive** observation only. It never calls `setPower`.
 
 ```java
+MechanismBlueprint elevator = MechanismBlueprint.of("elevator", MechanismConstruct.ELEVATOR);
+
 MechanismUnits units = MechanismUnits.linearMillimeters(
-        "elevator",
+        elevator.mechanismId(),
         /* ticksPerMillimeter */ 10.0,
         DirectionSign.POSITIVE);
 
 RevMotorObserver adapter = RevMotorObserver.create(
-        "elevator",
+        elevator.mechanismId(),
         new SystemNanoClock(),
         units,
         () -> elevatorMotor.getCurrentPosition(),
