@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- `Debounce.filter(asserted, nowNanos, windowNanos)` and `EdgeEvents` ignore bounce shorter than the window. Missing samples are not treated as not-asserted and do not create edges. Timestamps from `MimicClock` or `long nowNanos`. Observe-only; no actuation ([#55](https://github.com/The-Allsparks/MIMIC/issues/55)).
 - Generic mechanism templates: families Intake, Transfer (internal path; not "shoot"), Launcher, and Lift, with constructs including roller intake, feeder, flywheel, catapult, spinapult, turret, hood, and elevator (`org.allsparks.mimic.templates`). Catalog only; no actuation.
 - Initial public repository scaffold for The Allsparks FTC Team 36117.
 - Phase 0 `STALE` is documented and tested as observer liveness (gap since the previous `capture()` start), not Control Hub sample age. `staleAfterNanos <= 0` remains the default off switch ([#25](https://github.com/The-Allsparks/MIMIC/issues/25)).

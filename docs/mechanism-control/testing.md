@@ -2,9 +2,9 @@
 
 ## Unit tests (this scaffold)
 
-Covered now: unit conversion, direction, observer snapshots, missing/disconnected sensors, disagreement, observer-liveness `STALE` (`staleAfterNanos`), goal rejection, feature flags, AMPER unrestricted grant, loop overhead, **zero actuator writes**, documentation links.
+Covered now: unit conversion, direction, observer snapshots, missing/disconnected sensors, disagreement, observer-liveness `STALE` (`staleAfterNanos`), goal rejection, feature flags, AMPER unrestricted grant, loop overhead, debounce and edge events (`Debounce`, `EdgeEvents`, synthetic bounce traces), **zero actuator writes**, documentation links.
 
-Later phases must add: debounce, timeout, hard/soft limits, motion away from a limit, deferral, profiles, saturation, anti-windup, sync, interlocks, fault severity, bounded recovery, AMPER clip handling.
+Later phases must add: timeout, hard/soft limits, motion away from a limit, deferral, profiles, saturation, anti-windup, sync, interlocks, fault severity, bounded recovery, AMPER clip handling.
 
 ## Simulation tests (later)
 
@@ -40,3 +40,4 @@ Each card requires: adult supervision, supports/restraints, exclusion zone, e-st
 4. From `MechanismObserverTest.gapAboveThresholdMarksNumericSamplesStale`, explain why `STALE` is observer liveness (a slow `capture()` gap), not a frozen Hub encoder. Mark a CSV row with `posValid=STALE` versus `MISSING`.
 5. From `MimicSessionTest.disconnectedLimitSwitchIsMissing`, mark a CSV row with `lowerValid=MISSING` and `lower=n/a`. Contrast that with a healthy `lower=false` that also has `lowerValid=VALID`.
 6. Explain why `NO_ACTIVE_CONTROL` is the correct Phase 0 goal result.
+7. From `DebounceTest.bounceShorterThanWindowIsIgnored`, explain why a one-loop blip is not a home. From `missingLimitSampleDoesNotCreateAFallingEdge`, explain why a `MISSING` limit sample must not be treated as released.
