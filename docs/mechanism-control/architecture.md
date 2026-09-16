@@ -73,6 +73,8 @@ Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` 
 
 `PieceObservation.from(snapshot)` is observe-only presence and count on those extras. `PIECE_ENTRY` / `PIECE_EXIT` report `VALID`, `MISSING`, or `UNSUPPORTED`. A missing sensor is unknown occupancy, not empty. A `VALID` count of `0` is known empty; an unwired count is unknown, not zero. Identity, capacity, and reconcile stay out ([#64](https://github.com/The-Allsparks/MIMIC/issues/64)). No actuation.
 
+`Readiness.atSpeed(snapshot, minVel, hysteresis, dwellNanos)` is pure settling evaluation over velocity (position dual: `inTolerance`). One usable loop inside the band is not ready; dwell must elapse. Invalid velocity is not at-speed. `feed` returns a new evaluator and does not write hardware. Not a feeder interlock ([#59](https://github.com/The-Allsparks/MIMIC/issues/59)).
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.
