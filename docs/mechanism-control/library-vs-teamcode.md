@@ -7,6 +7,7 @@ MIMIC is a **reusable FTC mechanism library**. It must stay free of this year’
 | `MimicSession`, snapshots, units, REV observers, fake hardware | Hardware map names, motor/servo objects, gear ratios |
 | Generic families and constructs (`Intake`, `Transfer`, `Launcher`, `Lift`, `Arm`, …) and `MechanismConfiguration` | Which of those constructs this robot builds, ports, and their ids |
 | `InterlockRule` contract and table evaluation (unused by session; engine [#19](https://github.com/The-Allsparks/MIMIC/issues/19)) | Which rules this robot names (feeder vs launcher, intake vs deployed) |
+| `FaultPolicy` severity table (unused by session; recovery [#20](https://github.com/The-Allsparks/MIMIC/issues/20)) | Which roles declare `STOP_MECHANISM` vs `MARK_DEGRADED` on this robot |
 | Phase flags and observe-only policy | Which mechanisms exist on BumbleBee this season |
 | `MechanismControllerAdapter` / `Setpoint` (interface only; unused by `MimicSession`) | NextControl / FTCLib / PID implementations and license choice |
 | Examples that use string ids like `"intake"` | BIOBUZZ roles (NECTAR reject, FLOWER tray, alliance color) |

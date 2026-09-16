@@ -37,7 +37,8 @@
 | **Jam** | Same observe heuristic as stall (`JamDetector` / `JamSuspicion`). Reverse-clear remains forbidden. |
 | **Synchronization** | Keeping multiple actuators consistent. |
 | **Anti-racking** | Preventing structural twist from side-to-side disagreement. |
-| **Degraded operation** | Reduced capability while remaining as safe as possible. |
+| **Degraded operation** | Reduced capability while remaining as safe as possible. Per-role `DegradedBehavior` plus `FaultPolicy` lookup onto documented severities. Not recovery motion. |
+| **Latch unknown** | Missing latch confirmation. `FaultPolicy.autoReleases` is false: unknown is not disengaged. |
 | **sensorValid** | Aggregate: required wired channels usable and not disagreeing. Primary pose is required (omitted `ticks` keeps it false). Velocity is required only if `ticksPerSecond` is wired. |
 | **STALE** | Observer not called within `staleAfterNanos` (loop-call gap). Not Hub sample age and not “encoder disconnected.” Frozen supplier values on a timely loop stay `VALID`. |
 

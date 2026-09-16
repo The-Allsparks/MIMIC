@@ -73,7 +73,7 @@ Columns:
 | Interlock contracts | `InterlockRule` + `InterlockInputs` table evaluation; unused by session; no scheduler types | [#62](https://github.com/The-Allsparks/MIMIC/issues/62); parent #19 | named states, readiness bits | None if no output | none | 0 docs / 7 impl | yes | n/a |
 | Interlock engine | Missing | #19 | #18 | **High** if it commands | none | 7 | yes | n/a |
 | Ratchet lifecycle | Docs | #17 blocked hardware | #19 | **High** | robot | 7 | limited | later |
-| Fault / degraded policy | Docs severities; session DEGRADED on invalid | [#63](https://github.com/The-Allsparks/MIMIC/issues/63); parent #20 | config degraded map | None if policy only | none | 0 docs / 8 impl | yes | fake |
+| Fault / degraded policy | `FaultPolicy` kind + `DegradedBehavior` lookup; unused by session; latch unknown does not auto-release | [#63](https://github.com/The-Allsparks/MIMIC/issues/63); parent #20 | config degraded map | None if policy only | none | 0 docs / 8 impl | yes | fake |
 | Fault recovery that moves | Missing | #20 | #10 | **High** | robot | 8 | partial | later |
 | Piece tracker | Missing | [#64](https://github.com/The-Allsparks/MIMIC/issues/64) | piece observe | None if observe-only | sensors | 1+ | yes | yes |
 | Jam / stall detect | Observe-only `StallDetector` / `JamDetector`; unused by session | [#60](https://github.com/The-Allsparks/MIMIC/issues/60) | current+velocity+timeout | None (no reverse-clear) | none | 1 then 8 | yes | fake |

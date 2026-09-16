@@ -81,6 +81,8 @@ Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` 
 
 `InterlockRule` is a named unused contract: `when("feeder").requires("launcher", READY).onFail(REJECT)`. Table evaluation returns `GoalDisposition`. `MimicSession` does not register rules. Not a scheduler ([#62](https://github.com/The-Allsparks/MIMIC/issues/62)).
 
+`FaultPolicy.severity(kind, degradedBehavior)` is an unused severity lookup. Latch unknown does not auto-release. `MimicSession` does not consult it. Phase 8 flags stay off ([#63](https://github.com/The-Allsparks/MIMIC/issues/63)).
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.
@@ -106,6 +108,8 @@ Engine that would command hardware: still [#19](https://github.com/The-Allsparks
 ## `FaultMonitor` (Phase 8)
 
 Stale sensors, unexpected motion, no motion despite output, jumps, limit disagreement, actuator disagreement, timeout, calibration loss, stall suspicion. Observe-only `StallDetector` / `JamDetector` exist unused by session; reverse-clear and Phase 8 recovery stay unimplemented.
+
+`FaultPolicy` is the unused severity table: `severity(FaultKind.SENSOR_DISAGREEMENT, DegradedBehavior.STOP_MECHANISM)`. Latch unknown does not auto-release. `MimicSession.status()` stays `DEGRADED` on invalid snapshot only. Do not enable `phase8Faults` ([#63](https://github.com/The-Allsparks/MIMIC/issues/63), [fault-handling.md](fault-handling.md)). Recovery motion remains [#20](https://github.com/The-Allsparks/MIMIC/issues/20).
 
 ## `ActuatorSafetyGate` (Phase 3+)
 

@@ -24,6 +24,7 @@ Software must fail conservatively without causing an avoidable violent movement.
 | Gravity compensation wrong | Never assume depower is safe; `gravityCritical` | 4 / 9 |
 | BRAKE vs FLOAT | Document per mechanism; FLOAT can drop a load | 3 |
 | Ratchet engage under motion | Interlock: no downward power until released | 7 |
+| Loaded latch unknown | Do not auto-release; `FaultPolicy` floors `LATCH_UNKNOWN` at `STOP_MECHANISM` | 8 |
 | Stored energy (springs, CB) | Mechanical design; software cannot “turn off” energy | all |
 | Unexpected backdrive | Hold policy + brake/ratchet | 3–8 |
 | Multi-stage elevator | Travel maps per stage; do not invent CAD | 5 |
