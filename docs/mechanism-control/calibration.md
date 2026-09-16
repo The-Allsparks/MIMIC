@@ -16,6 +16,10 @@ Quadrature encoder ticks are a **delta** from whatever count was last called zer
 | Controlled hard-stop detect | Only if mechanically safe, rules-compliant, output-capped, timeout-bound |
 | Redundant agreement | Switch + absolute, or two towers |
 
+## Debounce helper (Phase 0)
+
+A one-loop blip is not a home. `Debounce.filter(asserted, nowNanos, windowNanos)` ignores assertion shorter than the window. Pass timestamps from `MimicClock` (or any `long nowNanos`). Missing samples are not treated as released and do not create rising or falling edges. See [testing.md](testing.md). The helper does not write motors.
+
 ## Encoder reset policy
 
 Resetting too early labels the wrong pose as zero. Resetting while still moving can leave a biased origin. Homing completion must specify **when** `STOP_AND_RESET_ENCODER` (or an equivalent offset) runs.
