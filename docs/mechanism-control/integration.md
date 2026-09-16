@@ -28,4 +28,4 @@ See [amper-integration.md](amper-integration.md). Phase 0 types are inert.
 
 ## Copying into TeamCode
 
-This library is a desktop `java-library`. Integration into `FtcRobotController` is a composite/source copy like AMPER — not published to Maven yet.
+This library is a desktop `java-library`. Robot names, ports, and BIOBUZZ interlocks belong in TeamCode ([library-vs-teamcode.md](library-vs-teamcode.md)). Integration into `FtcRobotController` is a composite `includeBuild` like AMPER — not published to Maven yet. Do not add that includeBuild until a TeamCode class actually constructs `MimicSession`.

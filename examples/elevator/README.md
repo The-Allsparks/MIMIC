@@ -1,6 +1,6 @@
-# Elevator observation sketch (Phase 0)
+# Linear mechanism observation sketch (Phase 0)
 
-The Allsparks counterbalanced elevator is the first **intended** real target. Hardware selection is incomplete; do not invent motors, sensors, or ratchet wiring. See [elevator-target.md](../../docs/mechanism-control/elevator-target.md).
+Generic example of observing one linear axis. It is **not** BumbleBee hardware and not a promise that Allsparks will build an elevator. Robot names and gear ratios belong in TeamCode. See [library-vs-teamcode.md](../../docs/mechanism-control/library-vs-teamcode.md).
 
 This sketch shows **passive** observation only. It never calls `setPower`.
 
