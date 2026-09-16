@@ -57,7 +57,7 @@ Columns:
 | Limit policy **contracts** | `LimitContract` declaration-only; session does not call it | [#57](https://github.com/The-Allsparks/MIMIC/issues/57); parent #11 | config | None if declaration-only | none | 0 docs / 3 impl | yes | later |
 | Actuator safety gate | Docs only | #10; review [#69](https://github.com/The-Allsparks/MIMIC/issues/69) | calibration + limits | **High** | robot | 3 | yes gate fn | later |
 | Soft limits / jog | Docs only | #11 | #10 | **High** | robot | 3 | yes | later |
-| Controller adapter contracts | Docs; no compile dep on NextControl | [#58](https://github.com/The-Allsparks/MIMIC/issues/58); #12 | config | None if no output | none | 0 docs / 4 impl | yes | later |
+| Controller adapter contracts | `MechanismControllerAdapter` / `Setpoint`; unused by session; no NextControl dep | [#58](https://github.com/The-Allsparks/MIMIC/issues/58); #12 | config | None if no output | none | 0 docs / 4 impl | yes | later |
 | Profiled motion / gravity FF | Docs only | #13, #14 | #12, robot | **High** | robot | 4 | limited | #22 |
 | Readiness / settling | Missing | [#59](https://github.com/The-Allsparks/MIMIC/issues/59) | snapshot | None if pure function | none | 1–4 | yes | yes |
 

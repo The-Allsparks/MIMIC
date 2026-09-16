@@ -8,6 +8,7 @@ MIMIC is a **reusable FTC mechanism library**. It must stay free of this year’
 | Generic families and constructs (`Intake`, `Transfer`, `Launcher`, `Lift`, `Arm`, …) and `MechanismConfiguration` | Which of those constructs this robot builds, ports, and their ids |
 | Generic interlock *engine* (when Phase 7 exists) | Named constraints: intake reject vs feeder, turret vs hood |
 | Phase flags and observe-only policy | Which mechanisms exist on BumbleBee this season |
+| `MechanismControllerAdapter` / `Setpoint` (interface only; unused by `MimicSession`) | NextControl / FTCLib / PID implementations and license choice |
 | Examples that use string ids like `"intake"` | BIOBUZZ roles (NECTAR reject, FLOWER tray, alliance color) |
 
 TeamCode still calls `setPower` / servo writes in Phase 0/1. MIMIC observes.

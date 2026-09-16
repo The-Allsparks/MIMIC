@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- `MechanismControllerAdapter` / immutable `Setpoint` (position, velocity, unit). Setpoint in, dimensionless effort out; no `setPower`. Unused by `MimicSession`; Phase 4 flags stay off; no NextControl/FTCLib/WPILib compile dependency. Fake adapter unit test does not write `FakeActuator` ([#58](https://github.com/The-Allsparks/MIMIC/issues/58)).
 - Immutable `LimitContract` (soft/hard bounds, stopping margin, wrap policy, missing-switch rule) attached optionally to `MechanismConfiguration`. Pure predicates refuse travel into a limit when the switch sample is missing; wrap-aware rotary arcs are documented. Declaration only: `MimicSession` does not call the contract, `permitsMotion()` is false, and FakeActuator writes stay 0 ([#57](https://github.com/The-Allsparks/MIMIC/issues/57)).
 - Immutable `CalibrationContract` (direction, max travel, timeout, debounce, encoder reset policy) attached optionally to `MechanismConfiguration`. Declaration only: missing timeout/travel are rejected for homing-capable strategies, `HARD_STOP_CURRENT` stays blocked, and `MimicSession` remains `UNCALIBRATED` / `NO_ACTIVE_CONTROL` ([#56](https://github.com/The-Allsparks/MIMIC/issues/56)).
 - Observe-only piece presence and count (`PieceObservation`) from `PIECE_ENTRY` / `PIECE_EXIT` / `PIECE_COUNT`. Missing or unwired sensors are unknown occupancy, not empty and not a count of zero. No identity tracker and no actuation ([#54](https://github.com/The-Allsparks/MIMIC/issues/54)).

@@ -87,7 +87,7 @@ Mechanism setpoints (not chassis paths): direct position, velocity, trapezoid or
 
 ## `MechanismController` (Phase 4)
 
-Replaceable: filter, feedback, feedforward, saturation, anti-windup. NextControl adapter is optional and not a Gradle dependency ([build-vs-adopt.md](build-vs-adopt.md)).
+Replaceable: filter, feedback, feedforward, saturation, anti-windup. Core seam: `MechanismControllerAdapter.effort(snapshot, setpoint)` returns dimensionless effort and does not write hardware. `MimicSession` does not call it. NextControl / FTCLib / WPILib adapters are optional TeamCode or test implementations and not Gradle dependencies ([build-vs-adopt.md](build-vs-adopt.md), [motion-control.md](motion-control.md)).
 
 ## `InterlockManager` (Phase 7)
 

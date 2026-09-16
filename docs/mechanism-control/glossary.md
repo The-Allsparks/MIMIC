@@ -26,7 +26,8 @@
 | **Feedforward** | Open-loop term from the model (gravity, friction, \(k_V\), \(k_A\)). |
 | **Gravity compensation** | Feedforward that counters gravity (constant or \(\cos\theta\)). |
 | **Motion profile** | Time-varying setpoint that respects max velocity/acceleration. |
-| **Setpoint** | Instantaneous reference the controller tracks (may differ from the goal). |
+| **Setpoint** | Instantaneous reference the controller tracks (may differ from the goal). Java type `Setpoint` (`position`, `velocity`, `unitSymbol`); not permission to move. |
+| **Controller adapter** | `MechanismControllerAdapter`: setpoint in, effort out, no hardware. Implementations live in TeamCode or tests, not as MIMIC compile dependencies. |
 | **Saturation** | Output clipped at a limit. |
 | **Integral windup** | Integral growing while saturated, causing overshoot when released. |
 | **Interlock** | Named constraint involving this mechanism and another state. |

@@ -61,6 +61,10 @@ Keep three ideas apart on paper:
 
 `LimitContract.permitsMotion()` is always false.
 
+## Controller adapter versus motors
+
+`MechanismControllerAdapter.effort(snapshot, setpoint)` is a number. It is not `setPower`. `MimicSession` does not call it. Phase 4 flags stay off. Adapter output must not reach motors until the actuator safety gate ([#10](https://github.com/The-Allsparks/MIMIC/issues/10)) exists.
+
 ## Missing switch is not clear
 
 `LimitSwitchSample.missing()` stores `asserted = false` because a Java boolean needs a value. That `false` is not a measurement of "not at the limit." A `MISSING` sample **must not** authorize travel into that limit. `STALE`, `OUT_OF_RANGE`, and `DISAGREEING` are likewise not a clear switch.
