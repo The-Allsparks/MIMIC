@@ -41,7 +41,7 @@ Repository: **[The-Allsparks/MIMIC](https://github.com/The-Allsparks/MIMIC)**
 |------|--------|
 | **Version** | `0.1.0-SNAPSHOT` |
 | **Implemented phase** | **Phase 0** (contracts, snapshots, fake hardware, passive REV adapters) |
-| **Phase 1** | Designed; flag exists, richer telemetry still experimental |
+| **Phase 1** | Flag default off. When on, desktop log extras only (`absValid`, `redundantValid`, `droppedCount`). Driver Station / on-robot telemetry remains [#6](https://github.com/The-Allsparks/MIMIC/issues/6). Does **not** actuate. |
 | **Phases 2–10** | Designed / experimental / **disabled by default** |
 | **Active motor or servo output** | **Disabled.** Do not enable without review and acceptance tests. |
 | **Production safety claims** | **None.** This scaffold has not been validated on a real FTC mechanism. |

@@ -165,6 +165,62 @@ class MimicSessionTest {
     }
 
     @Test
+    void phase0ObservationOmitsPhase1ExtraKeys() {
+        AtomicLong time = new AtomicLong(0L);
+        FakeMechanismHardware hardware = hardware(time);
+        MimicSession session = MimicSession.create(hardware.observer());
+        assertFalse(session.featureFlags().isPhase1PassiveObservation());
+        session.observe();
+        MimicEvent observation = observationEvent(session);
+        assertFalse(observation.fields().containsKey("absValid"));
+        assertFalse(observation.fields().containsKey("redundantValid"));
+        assertFalse(observation.fields().containsKey("droppedCount"));
+        assertEquals(0, hardware.actuator().outputWriteCount());
+    }
+
+    @Test
+    void phase1PassiveObservationAddsDesktopExtrasWithoutWriting() {
+        AtomicLong time = new AtomicLong(0L);
+        FakeMechanismHardware hardware = hardware(time);
+        MimicFeatureFlags flags = MimicFeatureFlags.passiveObservation();
+        assertTrue(flags.isPhase1PassiveObservation());
+        assertFalse(flags.isAnyActuationEnabled());
+        MimicSession session = new MimicSession(flags, hardware.observer(), new MimicEventLogger(8));
+        MechanismSnapshot snapshot = session.observe();
+        session.stop();
+        session.requestGoal(40.0);
+        assertEquals(0, hardware.actuator().outputWriteCount());
+        assertEquals(0.0, hardware.actuator().power(), 1e-9);
+        assertFalse(session.featureFlags().isAnyActuationEnabled());
+        MimicEvent observation = observationEvent(session);
+        assertEquals(snapshot.absoluteSensor().validity().name(), observation.fields().get("absValid"));
+        assertEquals(snapshot.redundantPosition().validity().name(), observation.fields().get("redundantValid"));
+        assertEquals("0", observation.fields().get("droppedCount"));
+        assertEquals("MISSING", observation.fields().get("absValid"));
+        assertEquals("UNSUPPORTED", observation.fields().get("redundantValid"));
+        String csv = session.logger().exportCsv();
+        assertTrue(csv.contains("absValid=MISSING"));
+        assertTrue(csv.contains("redundantValid=UNSUPPORTED"));
+        assertTrue(csv.contains("droppedCount=0"));
+    }
+
+    @Test
+    void phase1DroppedCountIsEventsAlreadyDiscarded() {
+        AtomicLong time = new AtomicLong(0L);
+        FakeMechanismHardware hardware = hardware(time);
+        MimicEventLogger logger = new MimicEventLogger(1);
+        MimicSession session =
+                new MimicSession(MimicFeatureFlags.passiveObservation(), hardware.observer(), logger);
+        session.observe();
+        session.observe();
+        session.observe();
+        assertEquals(2L, logger.droppedCount());
+        MimicEvent observation = observationEvent(session);
+        assertEquals("1", observation.fields().get("droppedCount"));
+        assertEquals(0, hardware.actuator().outputWriteCount());
+    }
+
+    @Test
     void actuationFlagsAreRejectedInPhase0Session() {
         AtomicLong time = new AtomicLong(0L);
         FakeMechanismHardware hardware = hardware(time);

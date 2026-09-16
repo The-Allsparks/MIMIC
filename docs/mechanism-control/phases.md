@@ -37,7 +37,7 @@ No active control. Add richer telemetry, disagreement metrics, timeline logging,
 - Mechanism behavior remains unchanged.
 - Invalid sensors demonstrable with fake hardware (partially covered in Phase 0 tests).
 
-Flag: `phase1PassiveObservation` — exists, does not actuate.
+Flag: `phase1PassiveObservation` — default false; desktop log extras only; does not actuate. Driver Station graphics remain issue #6.
 
 ---
 

@@ -18,8 +18,13 @@ import org.allsparks.mimic.observe.MechanismSnapshot;
  * Per-OpMode MIMIC session for one mechanism. Observes and logs; never
  * commands motors or servos.
  *
- * Phase 0 always samples. Phase 1 extras (richer logging) run only when
- * {@link MimicFeatureFlags#isPhase1PassiveObservation()} is true.
+ * Phase 0 always samples and writes the standard observation fields.
+ * When {@link MimicFeatureFlags#isPhase1PassiveObservation()} is true,
+ * {@link #observe()} also records desktop-only extras: absolute validity
+ * ({@code absValid}), redundant validity ({@code redundantValid}), and the
+ * logger dropped-event count already discarded before this sample
+ * ({@code droppedCount}). That flag does not enable actuation, Driver
+ * Station graphics, or on-robot telemetry.
  */
 public final class MimicSession implements MimicMechanism<Double> {
     public static final String NO_ACTIVE_CONTROL = "NO_ACTIVE_CONTROL";
@@ -48,15 +53,34 @@ public final class MimicSession implements MimicMechanism<Double> {
 
     /**
      * Read sensors and update logs. Call once per robot loop. Does not write
-     * motor or servo outputs.
+     * motor or servo outputs. Phase 1 extras are appended only when the
+     * session was constructed with
+     * {@link MimicFeatureFlags#isPhase1PassiveObservation()} true.
      */
     public MechanismSnapshot observe() {
         MechanismSnapshot snapshot = observer.capture();
         samples++;
         loopStats.offer(snapshot.loopDurationNanos());
-        logger.recordObservation(snapshot);
+        if (flags.isPhase1PassiveObservation()) {
+            logger.recordObservation(snapshot, phase1ExtraFields(snapshot));
+        } else {
+            logger.recordObservation(snapshot);
+        }
         lastSnapshot = snapshot;
         return snapshot;
+    }
+
+    /**
+     * Desktop-only keys. Values already live on the snapshot or logger; this
+     * copies them into the observation row. {@code droppedCount} is events
+     * discarded before this sample, not a Hub drop counter.
+     */
+    private Map<String, String> phase1ExtraFields(MechanismSnapshot snapshot) {
+        Map<String, String> extras = new LinkedHashMap<>();
+        extras.put("absValid", snapshot.absoluteSensor().validity().name());
+        extras.put("redundantValid", snapshot.redundantPosition().validity().name());
+        extras.put("droppedCount", Long.toString(logger.droppedCount()));
+        return extras;
     }
 
     @Override
