@@ -51,6 +51,10 @@ OpMode / scheduler
 
 Phase 0/1 stop after snapshot + log. Team code still owns `setPower`.
 
+## Library vs this year’s robot
+
+MIMIC is reusable. Hardware maps, BIOBUZZ game pieces, BumbleBee names, and named interlocks belong in TeamCode. See [library-vs-teamcode.md](library-vs-teamcode.md).
+
 ## `MechanismObserver`
 
 Captures once per loop: position, velocity, acceleration estimate, commanded/applied output, current where available, limits, absolute sensor, calibration observation, freshness, loop timing, redundant disagreement.

@@ -10,15 +10,17 @@ Two mechanisms can each be inside their own soft limits and still collide, unspo
 
 Prefer **named, testable** constraints over scattered conditionals.
 
-Examples (illustrative — not Allsparks CAD):
+Examples (illustrative, not a robot CAD):
 
-- intake must not feed the turret while the color sensor reports reject
+- intake must not feed while a reject sensor is true
 - feeder motion requires intake not jammed
 - hood motion requires turret not slewing through a blocked zone
 - turret slew requires hood inside a safe band
-- flower-tray extension requires turret stowed or a measured clearance
+- an extension axis requires turret stowed or a measured clearance
 - drivetrain speed depends on extension
 - mechanism must not obstruct a critical sensor (ViDAR cameras)
+
+Named BIOBUZZ constraints (NECTAR color reject, FLOWER tray, BumbleBee port names) belong in TeamCode. See [library-vs-teamcode.md](library-vs-teamcode.md).
 
 ## Outcomes
 

@@ -9,7 +9,7 @@ Living work-order for the orchestrator. Update after each issue or pull request.
 | **Current implementation stream** | `feature/issue-28-limit-validity-log` from `main` (`3dd761f`; PR #41 / #27 merged) |
 | **Automatic merge** | **false** — human approval required |
 | **Active subagent** | implementing #28 |
-| **Hardware available** | no (elevator not selected; BIOBUZZ intake/turret/hood not built) |
+| **Hardware available** | no (TeamCode has not wired a mechanism yet) |
 
 Full findings: [initial-deep-audit.md](initial-deep-audit.md). Roadmap: [#24](https://github.com/The-Allsparks/MIMIC/issues/24).
 
@@ -68,5 +68,5 @@ An issue is **ready** only when requirements are clear, dependencies are resolve
 
 - **Do not merge** without human approval (`AUTOMATIC_MERGE=false`).
 - **Do not enable** Phase 2–10 actuation.
-- **Do not invent** elevator hardware. Elevator is not a 2026–27 target. See [biobuzz-mechanism-targets.md](../mechanism-control/biobuzz-mechanism-targets.md).
+- **Do not invent** robot hardware maps or season game-piece types in this library. See [library-vs-teamcode.md](../mechanism-control/library-vs-teamcode.md).
 - **Do not reopen** the merged Phase 0 branch (`feature/phase-0-scaffold`). New work targets `main`.

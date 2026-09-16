@@ -10,7 +10,7 @@ These sketches show integration intent. They are **not** full FTC OpModes (no `h
 4. Call `MimicSession.observe()` once per loop.
 5. Leave all `setPower` / `setVelocity` / servo position calls unchanged.
 
-See [integration.md](../docs/mechanism-control/integration.md). First hardware target is BIOBUZZ intake / turret / hood ([biobuzz-mechanism-targets.md](../docs/mechanism-control/biobuzz-mechanism-targets.md)), not the archived [elevator sketch](elevator/README.md).
+See [integration.md](../docs/mechanism-control/integration.md). This year’s BumbleBee list lives in TeamCode (`mechanisms/README.md`), not in these sketches. [elevator/](elevator/README.md) is a generic linear-mechanism observe example.
 
 ## Later phases
 

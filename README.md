@@ -58,7 +58,7 @@ Supported targets for this scaffold:
 * Encoder ticks are **not** a physical pose until calibration exists (Phase 2). Phase 0 never homes.
 * Hub current sampling cost, encoder port accuracy, and limit-switch polarity must be measured on your robot.
 * MIMIC does **not** implement FRC SPARK/TalonFX firmware motion magic, REVLib onboard soft limits, or unverified SystemCore features.
-* The Allsparks elevator hardware is **not yet selected**; elevator-specific code is withheld until sensors and drive arrangement are known.
+* The library has **no robot-specific controllers**. This year’s BumbleBee mechanisms (intake, turret, hood, …) are TeamCode. See [library-vs-teamcode.md](docs/mechanism-control/library-vs-teamcode.md).
 
 ### Software limits do not replace mechanical design
 
@@ -111,13 +111,14 @@ See [build-versus-adopt](docs/mechanism-control/build-vs-adopt.md) and [research
 | [Troubleshooting](docs/mechanism-control/troubleshooting.md) | Failure modes |
 | [Glossary](docs/mechanism-control/glossary.md) | Vocabulary |
 | [References](docs/mechanism-control/references.md) | Citation table |
+| [Library vs TeamCode](docs/mechanism-control/library-vs-teamcode.md) | Generic library vs this year’s robot |
 | [Examples](examples/README.md) | Integration sketches |
 | [Phase 0 file plan](docs/mechanism-control/phase-0-plan.md) | Exact implementation plan |
 | [Initial deep audit](docs/audits/initial-deep-audit.md) | 2026-08-17 architecture, safety, and backlog audit |
 | [Priority ledger](docs/audits/priority-ledger.md) | Orchestrator work order |
 | [Assessment](docs/mechanism-control/assessment.md) | Benefit vs complexity judgment |
 | [Risks](docs/mechanism-control/risks.md) | Open questions |
-| [Elevator target](docs/mechanism-control/elevator-target.md) | Known vs unknown Allsparks hardware |
+| [Linear-lift research notes](docs/mechanism-control/elevator-target.md) | Historical lift unknowns; not this library’s product |
 
 ---
 
