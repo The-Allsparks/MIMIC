@@ -79,6 +79,8 @@ Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` 
 
 `SyncContract` is an optional unused disagreement limit on independently sensed topology. Linked motors share a command; a contract on a common shaft is rejected. `actuatorCount > 1` does not imply sync. `MimicSession` does not call it. Phase 5 flags stay off. Anti-racking output and Allsparks elevator CAD stay later ([#61](https://github.com/The-Allsparks/MIMIC/issues/61), [#15](https://github.com/The-Allsparks/MIMIC/issues/15), [#16](https://github.com/The-Allsparks/MIMIC/issues/16)).
 
+`InterlockRule` is a named unused contract: `when("feeder").requires("launcher", READY).onFail(REJECT)`. Table evaluation returns `GoalDisposition`. `MimicSession` does not register rules. Not a scheduler ([#62](https://github.com/The-Allsparks/MIMIC/issues/62)).
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.
@@ -97,7 +99,9 @@ Replaceable: filter, feedback, feedforward, saturation, anti-windup. Core seam: 
 
 ## `InterlockManager` (Phase 7)
 
-Named constraints: calibration, geometry, other mechanisms, ratchet/brake, robot mode.
+Engine that would command hardware: still [#19](https://github.com/The-Allsparks/MIMIC/issues/19). Not implemented. Do not add this type yet.
+
+`InterlockRule` is the named contract: `when("feeder").requires("launcher", READY).onFail(REJECT)`. `evaluate(InterlockInputs)` returns `GoalDisposition` via `GoalResult`. `MimicSession` does not register rules. Not a Command, Subsystem, or Scheduler ([#62](https://github.com/The-Allsparks/MIMIC/issues/62), [interlocks.md](interlocks.md)).
 
 ## `FaultMonitor` (Phase 8)
 

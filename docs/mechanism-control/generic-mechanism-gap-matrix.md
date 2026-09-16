@@ -70,7 +70,7 @@ Columns:
 | Anti-racking | Missing | #16 | #15 | **High** | robot | 5 | limited | later |
 | Named-state **definitions** | `MechanismConfiguration.namedStates()` metadata; `MechanismStatus` remains health | [#52](https://github.com/The-Allsparks/MIMIC/issues/52); parent #18 | config | None if metadata | none | 0–6 | yes | n/a |
 | Semantic state engine | Missing | #18 | phases 3–4, scheduler | Low–High | none/robot | 6 | yes table | n/a |
-| Interlock contracts | Docs only | [#62](https://github.com/The-Allsparks/MIMIC/issues/62); parent #19 | named states | None if no output | none | 0 docs / 7 impl | yes | n/a |
+| Interlock contracts | `InterlockRule` + `InterlockInputs` table evaluation; unused by session; no scheduler types | [#62](https://github.com/The-Allsparks/MIMIC/issues/62); parent #19 | named states, readiness bits | None if no output | none | 0 docs / 7 impl | yes | n/a |
 | Interlock engine | Missing | #19 | #18 | **High** if it commands | none | 7 | yes | n/a |
 | Ratchet lifecycle | Docs | #17 blocked hardware | #19 | **High** | robot | 7 | limited | later |
 | Fault / degraded policy | Docs severities; session DEGRADED on invalid | [#63](https://github.com/The-Allsparks/MIMIC/issues/63); parent #20 | config degraded map | None if policy only | none | 0 docs / 8 impl | yes | fake |

@@ -37,6 +37,13 @@ public final class ConfigurationValidator {
     public static final String LIMIT_INVALID_STOPPING_MARGIN = "LIMIT_INVALID_STOPPING_MARGIN";
     public static final String LIMIT_LINEAR_BOUNDS_ORDER = "LIMIT_LINEAR_BOUNDS_ORDER";
     public static final String SYNC_MAX_DISAGREEMENT_REQUIRED = "SYNC_MAX_DISAGREEMENT_REQUIRED";
+    public static final String INTERLOCK_EMPTY_SOURCE = "INTERLOCK_EMPTY_SOURCE";
+    public static final String INTERLOCK_EMPTY_REQUIREMENT = "INTERLOCK_EMPTY_REQUIREMENT";
+    public static final String INTERLOCK_MISSING_FAIL_OUTCOME = "INTERLOCK_MISSING_FAIL_OUTCOME";
+    public static final String INTERLOCK_CLAMP_TARGET_REQUIRED = "INTERLOCK_CLAMP_TARGET_REQUIRED";
+    public static final String INTERLOCK_INTERMEDIATE_TARGET_REQUIRED =
+            "INTERLOCK_INTERMEDIATE_TARGET_REQUIRED";
+    public static final String INTERLOCK_INTERMEDIATE_CYCLE = "INTERLOCK_INTERMEDIATE_CYCLE";
 
     private ConfigurationValidator() {}
 

@@ -31,7 +31,7 @@
 | **Controller adapter** | `MechanismControllerAdapter`: setpoint in, effort out, no hardware. Implementations live in TeamCode or tests, not as MIMIC compile dependencies. |
 | **Saturation** | Output clipped at a limit. |
 | **Integral windup** | Integral growing while saturated, causing overshoot when released. |
-| **Interlock** | Named constraint involving this mechanism and another state. |
+| **Interlock** | Named `InterlockRule` involving this mechanism and another state. Table evaluation only; not a scheduler. Engine that commands hardware is Phase 7 / [#19](https://github.com/The-Allsparks/MIMIC/issues/19). |
 | **Backdrive** | External torque turning the actuator. |
 | **Stall** | High current plus no motion for a timeout, not a single current sample. Observe-only `StallDetector` / `StallSuspicion`. Missing current is unsupported, not stalled. Not a reverse-clear. |
 | **Jam** | Same observe heuristic as stall (`JamDetector` / `JamSuspicion`). Reverse-clear remains forbidden. |
