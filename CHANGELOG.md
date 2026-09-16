@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- Optional named extras on `MechanismSnapshot` (`sample(name)` / `role(SensorRole)`). Missing lookups are `UNSUPPORTED`, not a fake `false`. Extra suppliers do not replace position, velocity, or limit fields and do not write hardware ([#53](https://github.com/The-Allsparks/MIMIC/issues/53)).
 - Immutable named-state name sets on `MechanismConfiguration` (`.namedStates(...)`). Metadata only; empty and duplicate names are rejected. Does not schedule motion ([#52](https://github.com/The-Allsparks/MIMIC/issues/52)).
 - Generic mechanism catalog research ([generic-mechanism-catalog.md](docs/mechanism-control/generic-mechanism-catalog.md)) and gap matrix ([generic-mechanism-gap-matrix.md](docs/mechanism-control/generic-mechanism-gap-matrix.md)).
 - Passive `org.allsparks.mimic.config`: `MechanismConfiguration`, `ActuatorTopology`, `SensorRole`, `Capability`, `ConstructDescriptor`, validation. Metadata only; no actuation.

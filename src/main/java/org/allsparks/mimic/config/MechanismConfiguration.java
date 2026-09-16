@@ -19,7 +19,8 @@ import org.allsparks.mimic.templates.MechanismMotionKind;
  * contains FTC hardware objects and never writes motors or servos.
  *
  * Join this to a {@code MechanismObserver} with the same {@code mechanismId}.
- * Phase 0 does not wire sensor roles into the observer.
+ * Optional observer extras may use the same names and roles; this type stays
+ * metadata and does not read or write hardware.
  */
 public final class MechanismConfiguration {
     private final String mechanismId;

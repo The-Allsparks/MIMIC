@@ -42,7 +42,7 @@ Columns:
 | Immutable snapshot | Exists `MechanismSnapshot` | closed #26 | — | None | none | 0 | yes | fake HW |
 | Validity enum | Exists | closed #25–#28 | — | None | none | 0 | yes | fake HW |
 | Fixed pose/velocity/current/limits | Exists `MechanismObserver` | — | — | None | none | 0 | yes | fake HW |
-| Named role samples on snapshot | Missing | [#53](https://github.com/The-Allsparks/MIMIC/issues/53) | config | None | none | 0–1 | yes | fake HW |
+| Named role samples on snapshot | Exists `sample` / `role` extras | [#53](https://github.com/The-Allsparks/MIMIC/issues/53) | config | None | none | 0–1 | yes | fake HW |
 | Piece entry/exit/count observation | Missing | [#54](https://github.com/The-Allsparks/MIMIC/issues/54) | snapshot roles | None | optional sensors | 1 | yes | fake digital |
 | Debounce / edge utilities | Missing | [#55](https://github.com/The-Allsparks/MIMIC/issues/55) | snapshot | None | none | 0–2 | yes | yes |
 | Passive REV adapters | Exists supplier-based | #6 blocked on robot; #34 packaging | #34 | None | Hub | 0–1 | stubs later | n/a |
@@ -102,7 +102,7 @@ Columns:
 | `TURRET`/`HOOD` under Launcher | Aim is rotary positioning | Reclassify to Arm |
 | `CLAW` under Intake | Grip is end effector | Reclassify |
 | `MechanismBlueprint` | No topology, sensors, capabilities | Keep; add `MechanismConfiguration` |
-| `MechanismObserver` fixed channels | Not role-based | Unchanged now; later snapshot issue |
+| `MechanismObserver` fixed channels | Not role-based | Keep fixed fields; extras via `sample` / `role` ([#53](https://github.com/The-Allsparks/MIMIC/issues/53)) |
 | `MimicSession.requestGoal` | Always `NO_ACTIVE_CONTROL` | Keep |
 | `isAnyActuationEnabled` | Metadata must not require Phase 6/10 flags | Do not set those flags; #33 later |
 | Ledger SHA / selected issue | Stale vs merged #28 and #48 | Update [priority-ledger.md](../audits/priority-ledger.md) |

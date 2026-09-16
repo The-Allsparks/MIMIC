@@ -59,6 +59,8 @@ MIMIC is reusable. Generic families live in `org.allsparks.mimic.templates`. Ins
 
 Captures once per loop: position, velocity, acceleration estimate, commanded/applied output, current where available, limits, absolute sensor, calibration observation, freshness, loop timing, redundant disagreement.
 
+Optional named extras (`namedSample` / `namedLimit`) copy onto the snapshot by team-owned name and `SensorRole`. They do not replace the fixed channels and do not change `sensorValid`.
+
 `sensorValid` is aggregate health of **required wired channels**, not “every channel exists.” Primary pose is required (omitted `ticks` keeps it false). Velocity is required only if `ticksPerSecond` is wired; `UNSUPPORTED` velocity does not clear the flag. Analog-only mechanisms wire the mapped analog value as `ticks` and omit velocity; `absoluteSensor` is an optional extra channel, not a substitute primary pose.
 
 **Must not command hardware.**
@@ -66,6 +68,8 @@ Captures once per loop: position, velocity, acceleration estimate, commanded/app
 ## `MechanismSnapshot`
 
 Immutable once-per-loop observation. Never used to write hardware. Position and velocity are `SensorSample`s (value, unit, and `MeasurementValidity`, including observer-liveness `STALE`). Scalar `position()` / `velocity()` delegate to the sample values. Absolute and redundant channels are also `SensorSample`s.
+
+Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` return a `RoleSample` with either a `SensorSample` or a `LimitSwitchSample`. Declared roles such as piece-entry live here; they have no first-class snapshot field. Missing names or roles are `UNSUPPORTED` on both sides, not a fake `false` / not-asserted reading. Do not invent values. `role(RELATIVE_POSITION)` / `role(VELOCITY)` / `role(RETRACT_LIMIT)` / `role(EXTEND_LIMIT)` / `role(ABSOLUTE_POSITION)` / `role(REDUNDANT_POSITION)` still expose the existing fields. Extra optional suppliers do not replace those fields.
 
 ## `CalibrationManager` (Phase 2 — not implemented)
 
