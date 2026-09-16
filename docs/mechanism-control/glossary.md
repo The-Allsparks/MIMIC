@@ -3,7 +3,11 @@
 | Term | Meaning in MIMIC |
 |------|------------------|
 | **Actuator** | Motor or servo that can produce motion or hold. |
-| **Mechanism** | One coordinated degree of freedom (elevator, arm, extension, …), possibly with multiple actuators. |
+| **Mechanism** | One coordinated degree of freedom (elevator, turret, feeder, …), possibly with multiple actuators. |
+| **Family** | Job of a mechanism: intake, transfer, launcher, or lift. See [mechanism-kinds.md](mechanism-kinds.md). |
+| **Construct** | Standard layout under a family (roller intake, feeder, flywheel, catapult, spinapult, turret, hood, elevator). |
+| **Transfer** | Internal path that moves a piece through the robot. Prefer this over "shoot". Launching off the robot is the launcher family. |
+| **Blueprint** | Catalog id + construct. Metadata only; it does not write hardware. |
 | **Encoder** | Sensor that reports motion; usually quadrature ticks on FTC motors. |
 | **Absolute encoder** | Sensor with a fixed origin (“clock”), not just a count since reset. |
 | **Incremental encoder** | Quadrature count (“stopwatch”) from a chosen zero. |

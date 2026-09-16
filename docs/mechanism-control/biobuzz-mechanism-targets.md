@@ -6,6 +6,6 @@ BumbleBee BIOBUZZ (no elevator; intake + color reject, feeder, turret, hood, opt
 
 [FtcRobotController `mechanisms/README.md`](https://github.com/The-Allsparks/FtcRobotController/blob/bumblebee/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/mechanisms/README.md)
 
-Boundary: [library-vs-teamcode.md](library-vs-teamcode.md).
+Boundary: [library-vs-teamcode.md](library-vs-teamcode.md). Generic families (not this table): [mechanism-kinds.md](mechanism-kinds.md).
 
 A historical linear-lift sketch remains in [elevator-target.md](elevator-target.md) as research, not as this library’s first product.

@@ -10,7 +10,14 @@ These sketches show integration intent. They are **not** full FTC OpModes (no `h
 4. Call `MimicSession.observe()` once per loop.
 5. Leave all `setPower` / `setVelocity` / servo position calls unchanged.
 
-See [integration.md](../docs/mechanism-control/integration.md). This year’s BumbleBee list lives in TeamCode (`mechanisms/README.md`), not in these sketches. [elevator/](elevator/README.md) is a generic linear-mechanism observe example.
+See [integration.md](../docs/mechanism-control/integration.md) and [mechanism-kinds.md](../docs/mechanism-control/mechanism-kinds.md). This year’s BumbleBee list lives in TeamCode (`mechanisms/README.md`), not in these sketches.
+
+| Sketch | Family / construct |
+|--------|--------------------|
+| [intake/](intake/README.md) | Intake (roller) |
+| [transfer/](transfer/README.md) | Transfer (feeder; internal path, not "shoot") |
+| [launcher/](launcher/README.md) | Launcher (flywheel + turret/hood composition) |
+| [elevator/](elevator/README.md) | Lift / elevator (generic linear axis) |
 
 ## Later phases
 

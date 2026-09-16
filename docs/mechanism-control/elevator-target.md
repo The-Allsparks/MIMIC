@@ -1,6 +1,6 @@
 # Linear-lift research notes (not a library product)
 
-**Superseded 15 Sep 2026 as an Allsparks robot product.** MIMIC must not grow elevator-specific controllers. This year’s BumbleBee list is TeamCode: [library-vs-teamcode.md](library-vs-teamcode.md).
+**Superseded 15 Sep 2026 as an Allsparks robot product.** Elevator remains a generic **lift construct** in [mechanism-kinds.md](mechanism-kinds.md). MIMIC must not grow elevator-specific controllers. This year’s BumbleBee list is TeamCode: [library-vs-teamcode.md](library-vs-teamcode.md).
 
 The notes below are historical lift-class research only.
 
