@@ -12,10 +12,11 @@ Prefer **named, testable** constraints over scattered conditionals.
 
 Examples (illustrative — not Allsparks CAD):
 
-- elevator descent requires intake clearance
-- arm motion requires elevator height
-- extension limit depends on elevator height
-- ratchet release precedes powered descent
+- intake must not feed the turret while the color sensor reports reject
+- feeder motion requires intake not jammed
+- hood motion requires turret not slewing through a blocked zone
+- turret slew requires hood inside a safe band
+- flower-tray extension requires turret stowed or a measured clearance
 - drivetrain speed depends on extension
 - mechanism must not obstruct a critical sensor (ViDAR cameras)
 

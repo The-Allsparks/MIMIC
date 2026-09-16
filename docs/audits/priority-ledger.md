@@ -4,12 +4,12 @@ Living work-order for the orchestrator. Update after each issue or pull request.
 
 | Field | Value |
 |-------|--------|
-| **Updated** | 2026-08-17 |
+| **Updated** | 2026-09-15 |
 | **Audited SHA** | `5847806f094f846cb3e8a4adf7ad0b355c4034fb` |
 | **Current implementation stream** | `feature/issue-28-limit-validity-log` from `main` (`3dd761f`; PR #41 / #27 merged) |
 | **Automatic merge** | **false** — human approval required |
 | **Active subagent** | implementing #28 |
-| **Hardware available** | no (elevator not selected) |
+| **Hardware available** | no (elevator not selected; BIOBUZZ intake/turret/hood not built) |
 
 Full findings: [initial-deep-audit.md](initial-deep-audit.md). Roadmap: [#24](https://github.com/The-Allsparks/MIMIC/issues/24).
 
@@ -68,5 +68,5 @@ An issue is **ready** only when requirements are clear, dependencies are resolve
 
 - **Do not merge** without human approval (`AUTOMATIC_MERGE=false`).
 - **Do not enable** Phase 2–10 actuation.
-- **Do not invent** elevator hardware.
+- **Do not invent** elevator hardware. Elevator is not a 2026–27 target. See [biobuzz-mechanism-targets.md](../mechanism-control/biobuzz-mechanism-targets.md).
 - **Do not reopen** the merged Phase 0 branch (`feature/phase-0-scaffold`). New work targets `main`.
