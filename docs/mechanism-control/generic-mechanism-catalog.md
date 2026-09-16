@@ -152,7 +152,13 @@ Standard presets live in `MechanismConstruct`. Teams add layouts with `Construct
 | Motor plus brake | Brake is a binary actuator/sensor | |
 | Motor plus ratchet | Ratchet state must be sensed, not assumed | |
 
-`actuatorCount > 1` does **not** mean synchronization is configured or safe.
+Students should keep three hardware facts apart:
+
+- **Linked motors share a command.** Two motors on one shaft or gearbox are `mechanicallyLinkedMotors`. Do not independently synchronize a common shaft.
+- **Two towers need two sensors.** Independently sensed sides (`independentlySensedMotors`) are the only topology that may opt into `MULTI_ACTUATOR_SYNCHRONIZATION` and an optional `SyncContract`.
+- **`actuatorCount > 1` does not mean sync.** `ActuatorTopology.impliesIndependentSynchronization()` is always false. Count, linkage, and an explicit contract are different ideas.
+
+`SyncContract.maxDisagreement(canonicalUnits).action(STOP_MECHANISM)` is an optional declaration on `MechanismConfiguration`. Default is absent. `MimicSession` does not call it. Validation rejects a `SyncContract` on mechanically linked topology. This is not anti-racking output ([#16](https://github.com/The-Allsparks/MIMIC/issues/16)). Allsparks elevator CAD (whether the shop robot is linked or independent) stays hardware ([#15](https://github.com/The-Allsparks/MIMIC/issues/15)).
 
 Multi-axis assemblies are multiple `MechanismConfiguration` objects composed by the OpMode, not one topology value.
 
@@ -286,6 +292,12 @@ This is not a feeder interlock engine and does not fire a launcher. Homed, acqui
 
 `StallDetector.update(snapshot)` ([StallDetector.java](../../src/main/java/org/allsparks/mimic/observe/StallDetector.java)) reads `snapshot.currentAmps()` and `snapshot.velocitySample()`. A stall is high current plus no motion for a required timeout, not a single current sample. One qualifying loop is not suspected. Missing, NaN, or unwired current is unsupported, not stalled. Unusable velocity is also unsupported: current-only is not a hard limit. `JamDetector` / `JamSuspicion` use the same heuristic. `update` does not write hardware. `MimicSession` does not call it. Reverse-clear and bounded jam clearing ([#20](https://github.com/The-Allsparks/MIMIC/issues/20)) stay forbidden. Do not enable `MimicFeatureFlags.phase8Faults`.
 
+### 7.4 Multi-actuator topology and sync contracts (declaration-only)
+
+`ActuatorTopology.mechanicallyLinkedMotors(n)` versus `independentlySensedMotors(n)` is the linked-versus-independent distinction. Linked motors share a command. Independent towers may later compare two sensors. `actuatorCount > 1` does not imply sync: `impliesIndependentSynchronization()` stays false.
+
+`SyncContract` ([SyncContract.java](../../src/main/java/org/allsparks/mimic/config/SyncContract.java)) records `maxDisagreement` in canonical units and a `DegradedBehavior` action (reuse `STOP_MECHANISM`). Attach it optionally on `MechanismConfiguration`; default absent. `MimicSession` does not call it. `permitsMotion()` and `appliesSideCorrection()` are false. A `SyncContract` on mechanically linked topology is rejected: you do not independently sync a common shaft. Phase 5 flags stay off. Anti-racking output stays [#16](https://github.com/The-Allsparks/MIMIC/issues/16). Elevator CAD stays [#15](https://github.com/The-Allsparks/MIMIC/issues/15).
+
 ---
 
 ## 8. Design decisions
@@ -371,7 +383,7 @@ Answers to the architecture questions:
 
 ## 12. Implementation slice (this repository)
 
-Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, snapshot role extras, observe-only piece presence/count (`PieceObservation`), pure `Readiness` at-speed / in-tolerance evaluation, observe-only stall/jam suspicion (`StallDetector` / `JamDetector`), validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Catalog metadata tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#54](https://github.com/The-Allsparks/MIMIC/issues/54); readiness as [#59](https://github.com/The-Allsparks/MIMIC/issues/59); stall/jam as [#60](https://github.com/The-Allsparks/MIMIC/issues/60).
+Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, snapshot role extras, observe-only piece presence/count (`PieceObservation`), pure `Readiness` at-speed / in-tolerance evaluation, observe-only stall/jam suspicion (`StallDetector` / `JamDetector`), optional unused `SyncContract` on independently sensed topology, validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Catalog metadata tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#54](https://github.com/The-Allsparks/MIMIC/issues/54); readiness as [#59](https://github.com/The-Allsparks/MIMIC/issues/59); stall/jam as [#60](https://github.com/The-Allsparks/MIMIC/issues/60); topology vs sync contracts as [#61](https://github.com/The-Allsparks/MIMIC/issues/61).
 
 Forbidden now: motor/servo writes, homing motion, limit enforcement, controllers, interlock engines, piece-tracker runtime, Phase 2–10 flags. Follow-up issues: [#55](https://github.com/The-Allsparks/MIMIC/issues/55)–[#70](https://github.com/The-Allsparks/MIMIC/issues/70). Active control remains behind [#69](https://github.com/The-Allsparks/MIMIC/issues/69).
 

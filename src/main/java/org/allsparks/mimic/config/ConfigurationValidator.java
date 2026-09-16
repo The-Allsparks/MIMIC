@@ -36,6 +36,7 @@ public final class ConfigurationValidator {
     public static final String LIMIT_WRAP_PERIOD_REQUIRED = "LIMIT_WRAP_PERIOD_REQUIRED";
     public static final String LIMIT_INVALID_STOPPING_MARGIN = "LIMIT_INVALID_STOPPING_MARGIN";
     public static final String LIMIT_LINEAR_BOUNDS_ORDER = "LIMIT_LINEAR_BOUNDS_ORDER";
+    public static final String SYNC_MAX_DISAGREEMENT_REQUIRED = "SYNC_MAX_DISAGREEMENT_REQUIRED";
 
     private ConfigurationValidator() {}
 
@@ -150,6 +151,18 @@ public final class ConfigurationValidator {
                         SYNC_INSUFFICIENT_FEEDBACK,
                         "sensors",
                         "independently synchronized actuators require at least two position measurements"));
+            }
+        }
+
+        SyncContract syncContract = configuration.syncContract().orElse(null);
+        if (syncContract != null) {
+            syncContract.collectBoundIssues(issues);
+            if (configuration.actuators().isMechanicallyLinked()) {
+                issues.add(
+                        new ValidationIssue(
+                                LINKED_MOTORS_WITH_INDEPENDENT_SYNC,
+                                "syncContract",
+                                "mechanically linked motors must not declare independent synchronization"));
             }
         }
 

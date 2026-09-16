@@ -92,6 +92,12 @@ public final class ActuatorTopology {
         return arrangement == ActuatorArrangement.INDEPENDENTLY_SENSED_MOTORS;
     }
 
+    /**
+     * Always false. Count greater than one, linked motors, and independently
+     * sensed motors never imply that independent synchronization is
+     * configured. Attach an explicit {@link Capability#MULTI_ACTUATOR_SYNCHRONIZATION}
+     * and optional {@link SyncContract} instead.
+     */
     public boolean impliesIndependentSynchronization() {
         return false;
     }

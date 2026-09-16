@@ -77,6 +77,8 @@ Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` 
 
 `StallDetector.update(snapshot)` is observe-only stall suspicion from current, velocity, and a required timeout. Missing / NaN current is unsupported, not stalled. `JamDetector` uses the same heuristic. Neither writes hardware, reverse-clears, nor is called by `MimicSession` ([#60](https://github.com/The-Allsparks/MIMIC/issues/60)).
 
+`SyncContract` is an optional unused disagreement limit on independently sensed topology. Linked motors share a command; a contract on a common shaft is rejected. `actuatorCount > 1` does not imply sync. `MimicSession` does not call it. Phase 5 flags stay off. Anti-racking output and Allsparks elevator CAD stay later ([#61](https://github.com/The-Allsparks/MIMIC/issues/61), [#15](https://github.com/The-Allsparks/MIMIC/issues/15), [#16](https://github.com/The-Allsparks/MIMIC/issues/16)).
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.

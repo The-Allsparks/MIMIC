@@ -241,6 +241,7 @@ class MechanismConfigurationTest {
         assertFalse(linked.capabilities().contains(Capability.MULTI_ACTUATOR_SYNCHRONIZATION));
         assertFalse(linked.actuators().impliesIndependentSynchronization());
         assertEquals(2, linked.actuators().actuatorCount());
+        assertFalse(linked.syncContract().isPresent());
 
         InvalidMechanismConfigurationException linkedSync =
                 assertThrows(

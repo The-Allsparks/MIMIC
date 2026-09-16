@@ -34,6 +34,7 @@ public final class MechanismConfiguration {
     private final ControlDomain controlDomain;
     private final LimitPolicy limitPolicy;
     private final LimitContract limitContract;
+    private final SyncContract syncContract;
     private final List<String> namedStates;
 
     private MechanismConfiguration(Builder builder) {
@@ -51,6 +52,7 @@ public final class MechanismConfiguration {
         this.controlDomain = builder.controlDomain;
         this.limitPolicy = builder.limitPolicy;
         this.limitContract = builder.limitContract;
+        this.syncContract = builder.syncContract;
         this.namedStates = Collections.unmodifiableList(new ArrayList<>(builder.namedStates));
     }
 
@@ -124,6 +126,15 @@ public final class MechanismConfiguration {
     }
 
     /**
+     * Optional independent-actuator disagreement limit. Absent by default.
+     * Presence does not synchronize motors, does not apply side correction,
+     * and is unused by {@code MimicSession}.
+     */
+    public Optional<SyncContract> syncContract() {
+        return Optional.ofNullable(syncContract);
+    }
+
+    /**
      * Declared pose or cycle names for this instance. Empty when unused. The
      * list is metadata: it does not schedule motion or write hardware.
      */
@@ -155,6 +166,7 @@ public final class MechanismConfiguration {
         private ControlDomain controlDomain = ControlDomain.PASSIVE_OBSERVATION;
         private LimitPolicy limitPolicy = LimitPolicy.NONE;
         private LimitContract limitContract;
+        private SyncContract syncContract;
         private final List<String> namedStates = new ArrayList<>();
 
         private Builder(String mechanismId) {
@@ -244,6 +256,16 @@ public final class MechanismConfiguration {
             if (limitContract != null) {
                 this.limitPolicy = limitContract.policy();
             }
+            return this;
+        }
+
+        /**
+         * Attach an optional {@link SyncContract}. {@code null} leaves the
+         * contract absent. Presence does not enable Phase 5 synchronization
+         * and does not write hardware.
+         */
+        public Builder syncContract(SyncContract syncContract) {
+            this.syncContract = syncContract;
             return this;
         }
 

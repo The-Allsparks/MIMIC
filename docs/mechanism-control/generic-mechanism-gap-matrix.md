@@ -65,7 +65,7 @@ Columns:
 
 | Capability | Code | Issue | Dep | Output risk | Hardware | Phase | Unit | Sim |
 |------------|------|-------|-----|-------------|----------|-------|------|-----|
-| Topology vs sync contracts | Missing | [#61](https://github.com/The-Allsparks/MIMIC/issues/61) (software) | config | None if contracts only | none | 0 docs / 5 impl | yes | later |
+| Topology vs sync contracts | `SyncContract` declaration-only; linked+contract rejected; unused by session | [#61](https://github.com/The-Allsparks/MIMIC/issues/61) (software) | config | None if contracts only | none | 0 docs / 5 impl | yes | later |
 | Allsparks elevator CAD sync | Unknown hardware | #15 blocked | CAD | **High** if implemented wrong | robot | 5 | no | no |
 | Anti-racking | Missing | #16 | #15 | **High** | robot | 5 | limited | later |
 | Named-state **definitions** | `MechanismConfiguration.namedStates()` metadata; `MechanismStatus` remains health | [#52](https://github.com/The-Allsparks/MIMIC/issues/52); parent #18 | config | None if metadata | none | 0–6 | yes | n/a |
