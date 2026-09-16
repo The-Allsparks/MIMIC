@@ -317,6 +317,7 @@ class MechanismConfigurationTest {
             assertNoSeasonLeak(construct.summary());
             PresetSuggestion suggestion = StandardPresets.suggestionFor(construct);
             assertNoSeasonLeak(suggestion.notes());
+            assertNoSeasonLeak(suggestion.hazardNotes());
         }
         for (SensorRole role : SensorRole.values()) {
             assertNoSeasonLeak(role.name());

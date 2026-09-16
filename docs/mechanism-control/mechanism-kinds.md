@@ -75,6 +75,23 @@ MechanismConfiguration lift =
 
 Presets in `StandardPresets` are **suggestions**. They do not mean the sensor is wired. `build()` validates contradictions (for example homing with no home source) and never writes hardware.
 
+## Starting from a preset
+
+A student can start from a preset and delete sensors they do not have. Optional roles are extras, not wiring.
+
+```java
+PresetSuggestion suggestion = StandardPresets.suggestionFor(MechanismConstruct.ELEVATOR);
+List<SensorRole> extras = suggestion.optionalRoles();
+```
+
+- `exampleSensors()` is the smallest set that can make a valid desktop example when those capabilities have evidence.
+- `optionalRoles()` lists extras a team can add or delete (home already in the elevator example; upper limit, absolute, redundant, and current are extras). They are not HardwareMap names.
+- `hazardNotes()` copies catalog hazard phrases. They are not a controller.
+- Do not enable a capability just because the optional list mentions a matching sensor. `exampleConfiguration` copies example sensors and only capabilities that already have evidence.
+- Suggestion lists do not auto-enable `MULTI_ACTUATOR_SYNCHRONIZATION`. A second position role, or `actuatorCount > 1`, still does not imply sync.
+
+Keep only example sensors you actually have, then declare optional roles you wired. Delete the rest. Do not auto-wire `HardwareMap`.
+
 `MechanismBlueprint` remains a thin id + construct catalog entry:
 
 ```java
