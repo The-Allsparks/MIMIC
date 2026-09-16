@@ -53,7 +53,7 @@ Phase 0/1 stop after snapshot + log. Team code still owns `setPower`.
 
 ## Library vs this year’s robot
 
-MIMIC is reusable. Generic families (intake, transfer, launcher, lift) live in `org.allsparks.mimic.templates`. Hardware maps, BIOBUZZ game pieces, BumbleBee names, and named interlocks belong in TeamCode. See [library-vs-teamcode.md](library-vs-teamcode.md) and [mechanism-kinds.md](mechanism-kinds.md).
+MIMIC is reusable. Generic families live in `org.allsparks.mimic.templates`. Instance topology, sensor roles, and capability declarations live in `org.allsparks.mimic.config` (metadata only). Hardware maps, season game pieces, robot names, and named interlocks belong in TeamCode. See [library-vs-teamcode.md](library-vs-teamcode.md), [mechanism-kinds.md](mechanism-kinds.md), and [generic-mechanism-catalog.md](generic-mechanism-catalog.md).
 
 ## `MechanismObserver`
 

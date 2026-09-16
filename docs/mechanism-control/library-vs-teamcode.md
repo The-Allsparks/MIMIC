@@ -5,7 +5,7 @@ MIMIC is a **reusable FTC mechanism library**. It must stay free of this year’
 | Lives in MIMIC | Lives in TeamCode (or FORGE curriculum) |
 |----------------|-----------------------------------------|
 | `MimicSession`, snapshots, units, REV observers, fake hardware | Hardware map names, motor/servo objects, gear ratios |
-| Generic families and constructs (`Intake`, `Transfer`, `Launcher`, `Lift`; catapult, spinapult, turret, elevator, …) | Which of those constructs this robot builds, and their ids |
+| Generic families and constructs (`Intake`, `Transfer`, `Launcher`, `Lift`, `Arm`, …) and `MechanismConfiguration` | Which of those constructs this robot builds, ports, and their ids |
 | Generic interlock *engine* (when Phase 7 exists) | Named constraints: intake reject vs feeder, turret vs hood |
 | Phase flags and observe-only policy | Which mechanisms exist on BumbleBee this season |
 | Examples that use string ids like `"intake"` | BIOBUZZ roles (NECTAR reject, FLOWER tray, alliance color) |

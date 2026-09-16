@@ -16,7 +16,7 @@ See [integration.md](../docs/mechanism-control/integration.md) and [mechanism-ki
 |--------|--------------------|
 | [intake/](intake/README.md) | Intake (roller) |
 | [transfer/](transfer/README.md) | Transfer (feeder; internal path, not "shoot") |
-| [launcher/](launcher/README.md) | Launcher (flywheel + turret/hood composition) |
+| [launcher/](launcher/README.md) | Launcher energy + Arm aim (flywheel + turret/hood composition) |
 | [elevator/](elevator/README.md) | Lift / elevator (generic linear axis) |
 
 ## Later phases

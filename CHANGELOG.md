@@ -9,6 +9,9 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- Generic mechanism catalog research ([generic-mechanism-catalog.md](docs/mechanism-control/generic-mechanism-catalog.md)) and gap matrix ([generic-mechanism-gap-matrix.md](docs/mechanism-control/generic-mechanism-gap-matrix.md)).
+- Passive `org.allsparks.mimic.config`: `MechanismConfiguration`, `ActuatorTopology`, `SensorRole`, `Capability`, `ConstructDescriptor`, validation. Metadata only; no actuation.
+- Expanded families (Arm, End effector, Climber, Field element, Passive) and standard constructs. Custom constructs without editing the enum.
 - Generic mechanism templates: families Intake, Transfer (internal path; not "shoot"), Launcher, and Lift, with constructs including roller intake, feeder, flywheel, catapult, spinapult, turret, hood, and elevator (`org.allsparks.mimic.templates`). Catalog only; no actuation.
 - Initial public repository scaffold for The Allsparks FTC Team 36117.
 - Phase 0 `STALE` is documented and tested as observer liveness (gap since the previous `capture()` start), not Control Hub sample age. `staleAfterNanos <= 0` remains the default off switch ([#25](https://github.com/The-Allsparks/MIMIC/issues/25)).
@@ -19,6 +22,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Changed
 
+- `MechanismConstruct.TURRET` and `HOOD` are Arm (aim), not Launcher (energy). `CLAW` is End effector, not Intake. Justified in the generic catalog.
 - `sensorValid` means required wired channels are usable and not disagreeing. Velocity is required only when `ticksPerSecond` is wired (`UNSUPPORTED` velocity does not clear the flag). Analog-only observation wires mapped analog as `ticks`; omitted ticks still keeps the snapshot invalid ([#27](https://github.com/The-Allsparks/MIMIC/issues/27)).
 
 ### Safety
