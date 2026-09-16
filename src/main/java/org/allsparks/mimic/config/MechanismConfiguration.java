@@ -31,6 +31,7 @@ public final class MechanismConfiguration {
     private final CalibrationStrategy calibrationStrategy;
     private final ControlDomain controlDomain;
     private final LimitPolicy limitPolicy;
+    private final List<String> namedStates;
 
     private MechanismConfiguration(Builder builder) {
         this.mechanismId = builder.mechanismId;
@@ -45,6 +46,7 @@ public final class MechanismConfiguration {
         this.calibrationStrategy = builder.calibrationStrategy;
         this.controlDomain = builder.controlDomain;
         this.limitPolicy = builder.limitPolicy;
+        this.namedStates = Collections.unmodifiableList(new ArrayList<>(builder.namedStates));
     }
 
     public static Builder builder(String mechanismId) {
@@ -100,6 +102,14 @@ public final class MechanismConfiguration {
         return limitPolicy;
     }
 
+    /**
+     * Declared pose or cycle names for this instance. Empty when unused. The
+     * list is metadata: it does not schedule motion or write hardware.
+     */
+    public List<String> namedStates() {
+        return namedStates;
+    }
+
     public Optional<MechanismBlueprint> toBlueprint() {
         if (construct == null || !construct.isStandard()) {
             return Optional.empty();
@@ -122,6 +132,7 @@ public final class MechanismConfiguration {
         private CalibrationStrategy calibrationStrategy = CalibrationStrategy.NONE;
         private ControlDomain controlDomain = ControlDomain.PASSIVE_OBSERVATION;
         private LimitPolicy limitPolicy = LimitPolicy.NONE;
+        private final List<String> namedStates = new ArrayList<>();
 
         private Builder(String mechanismId) {
             this.mechanismId = mechanismId;
@@ -182,6 +193,18 @@ public final class MechanismConfiguration {
 
         public Builder limitPolicy(LimitPolicy limitPolicy) {
             this.limitPolicy = limitPolicy == null ? LimitPolicy.NONE : limitPolicy;
+            return this;
+        }
+
+        /**
+         * Replace the declared named-state set. Names do not move hardware and
+         * are not a scheduler.
+         */
+        public Builder namedStates(String... names) {
+            this.namedStates.clear();
+            if (names != null) {
+                Collections.addAll(this.namedStates, names);
+            }
             return this;
         }
 

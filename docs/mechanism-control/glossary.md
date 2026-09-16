@@ -8,7 +8,7 @@
 | **Construct** | Standard layout under a family, or a custom `ConstructDescriptor`. |
 | **Transfer** | Internal path that moves a piece through the robot. Prefer this over "shoot". Launching off the robot is the launcher family. Aim (turret, hood) is the arm family. |
 | **Blueprint** | Catalog id + construct. Metadata only; it does not write hardware. |
-| **Configuration** | Immutable instance metadata: topology, sensor roles, capabilities, calibration/limit/control declarations. Validated; never writes hardware. |
+| **Configuration** | Immutable instance metadata: topology, sensor roles, capabilities, named-state names, calibration/limit/control declarations. Validated; never writes hardware. |
 | **Actuator topology** | How motors/servos are arranged. Independent of construct. Count greater than one does not imply synchronization. |
 | **Sensor role** | Job of a measurement (home, piece entry, redundant position). Not an FTC device class. |
 | **Encoder** | Sensor that reports motion; usually quadrature ticks on FTC motors. |

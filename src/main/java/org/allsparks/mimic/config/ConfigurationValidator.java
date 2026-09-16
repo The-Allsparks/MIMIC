@@ -25,6 +25,8 @@ public final class ConfigurationValidator {
     public static final String SERVO_COMMAND_AS_MEASURED_POSITION = "SERVO_COMMAND_AS_MEASURED_POSITION";
     public static final String LINKED_MOTORS_WITH_INDEPENDENT_SYNC = "LINKED_MOTORS_WITH_INDEPENDENT_SYNC";
     public static final String REQUIRED_SENSOR_IGNORE_OPTIONAL = "REQUIRED_SENSOR_IGNORE_OPTIONAL";
+    public static final String EMPTY_NAMED_STATE = "EMPTY_NAMED_STATE";
+    public static final String DUPLICATE_NAMED_STATE = "DUPLICATE_NAMED_STATE";
 
     private ConfigurationValidator() {}
 
@@ -143,6 +145,19 @@ public final class ConfigurationValidator {
                     SERVO_COMMAND_AS_MEASURED_POSITION,
                     "sensors",
                     "positional servo command is not measured position; declare EXTERNAL_SERVO_FEEDBACK"));
+        }
+
+        List<String> seenNamedStates = new ArrayList<>();
+        for (String name : configuration.namedStates()) {
+            if (name == null || name.trim().isEmpty()) {
+                issues.add(new ValidationIssue(
+                        EMPTY_NAMED_STATE, "namedStates", "named state must be non-empty"));
+            } else if (seenNamedStates.contains(name)) {
+                issues.add(new ValidationIssue(
+                        DUPLICATE_NAMED_STATE, name, "duplicate named state " + name));
+            } else {
+                seenNamedStates.add(name);
+            }
         }
 
         return ValidationResult.of(issues);

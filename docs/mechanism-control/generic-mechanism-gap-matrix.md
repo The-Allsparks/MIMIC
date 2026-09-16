@@ -68,7 +68,7 @@ Columns:
 | Topology vs sync contracts | Missing | [#61](https://github.com/The-Allsparks/MIMIC/issues/61) (software) | config | None if contracts only | none | 0 docs / 5 impl | yes | later |
 | Allsparks elevator CAD sync | Unknown hardware | #15 blocked | CAD | **High** if implemented wrong | robot | 5 | no | no |
 | Anti-racking | Missing | #16 | #15 | **High** | robot | 5 | limited | later |
-| Named-state **definitions** | `MechanismStatus` is health, not poses | [#52](https://github.com/The-Allsparks/MIMIC/issues/52); parent #18 | config | None if metadata | none | 0–6 | yes | n/a |
+| Named-state **definitions** | `MechanismConfiguration.namedStates()` metadata; `MechanismStatus` remains health | [#52](https://github.com/The-Allsparks/MIMIC/issues/52); parent #18 | config | None if metadata | none | 0–6 | yes | n/a |
 | Semantic state engine | Missing | #18 | phases 3–4, scheduler | Low–High | none/robot | 6 | yes table | n/a |
 | Interlock contracts | Docs only | [#62](https://github.com/The-Allsparks/MIMIC/issues/62); parent #19 | named states | None if no output | none | 0 docs / 7 impl | yes | n/a |
 | Interlock engine | Missing | #19 | #18 | **High** if it commands | none | 7 | yes | n/a |

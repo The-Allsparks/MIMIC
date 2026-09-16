@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- Immutable named-state name sets on `MechanismConfiguration` (`.namedStates(...)`). Metadata only; empty and duplicate names are rejected. Does not schedule motion ([#52](https://github.com/The-Allsparks/MIMIC/issues/52)).
 - Generic mechanism catalog research ([generic-mechanism-catalog.md](docs/mechanism-control/generic-mechanism-catalog.md)) and gap matrix ([generic-mechanism-gap-matrix.md](docs/mechanism-control/generic-mechanism-gap-matrix.md)).
 - Passive `org.allsparks.mimic.config`: `MechanismConfiguration`, `ActuatorTopology`, `SensorRole`, `Capability`, `ConstructDescriptor`, validation. Metadata only; no actuation.
 - Expanded families (Arm, End effector, Climber, Field element, Passive) and standard constructs. Custom constructs without editing the enum.

@@ -234,6 +234,8 @@ Suggested sensors and features are **presets**, not wiring. A construct default 
 
 These are teaching sketches for later phases. They are not implemented and must not write hardware.
 
+Teams may declare the allowed names on `MechanismConfiguration` as metadata, for example `.namedStates("OPEN", "CLOSED", "HOLDING")`. Duplicate and empty names are rejected at validation. The list is not a scheduler, does not request motion, and does not enable [#18](https://github.com/The-Allsparks/MIMIC/issues/18).
+
 **Roller intake:** `STOPPED` / `INTAKING` / `OUTTAKING` / (`JAM_CLEARING` bounded). Missing piece sensor stays in commanded direction.
 
 **Indexer:** `IDLE` / `ADVANCING` / `SETTLED` / `MISSED_INDEX`. Wrap-aware pocket occupancy.
@@ -353,7 +355,7 @@ Answers to the architecture questions:
 
 ## 12. Implementation slice (this repository)
 
-Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49), [#50](https://github.com/The-Allsparks/MIMIC/issues/50), [#51](https://github.com/The-Allsparks/MIMIC/issues/51).
+Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49), [#50](https://github.com/The-Allsparks/MIMIC/issues/50), [#51](https://github.com/The-Allsparks/MIMIC/issues/51), [#52](https://github.com/The-Allsparks/MIMIC/issues/52).
 
 Forbidden now: motor/servo writes, homing motion, limit enforcement, controllers, interlock engines, piece-tracker runtime, Phase 2–10 flags. Follow-up issues: [#52](https://github.com/The-Allsparks/MIMIC/issues/52)–[#70](https://github.com/The-Allsparks/MIMIC/issues/70). Active control remains behind [#69](https://github.com/The-Allsparks/MIMIC/issues/69).
 

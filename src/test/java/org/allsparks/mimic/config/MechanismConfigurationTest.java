@@ -67,6 +67,76 @@ class MechanismConfigurationTest {
         assertEquals(DegradedBehavior.STOP_MECHANISM, configuration.degradedBehavior(SensorRole.REDUNDANT_POSITION));
         assertTrue(configuration.toBlueprint().isPresent());
         assertEquals(MechanismConstruct.ELEVATOR, configuration.toBlueprint().get().construct());
+        assertTrue(configuration.namedStates().isEmpty());
+    }
+
+    @Test
+    void namedStatesAreDeclaredImmutableAndNotAScheduler() {
+        String[] names = {"OPEN", "CLOSED", "HOLDING"};
+        MechanismConfiguration claw =
+                MechanismConfiguration.builder("claw")
+                        .construct(MechanismConstruct.CLAW)
+                        .actuators(ActuatorTopology.positionalServo())
+                        .enable(Capability.NAMED_STATES)
+                        .controlDomain(ControlDomain.NAMED_STATE)
+                        .namedStates(names)
+                        .build();
+        names[0] = "MUTATED";
+        assertEquals(3, claw.namedStates().size());
+        assertEquals("OPEN", claw.namedStates().get(0));
+        assertEquals("CLOSED", claw.namedStates().get(1));
+        assertEquals("HOLDING", claw.namedStates().get(2));
+        assertThrows(UnsupportedOperationException.class, () -> claw.namedStates().add("FIRING"));
+        assertThrows(UnsupportedOperationException.class, () -> claw.namedStates().clear());
+        assertEquals(String.class, claw.namedStates().get(0).getClass());
+    }
+
+    @Test
+    void emptyAndDuplicateNamedStatesAreRejected() {
+        InvalidMechanismConfigurationException empty =
+                assertThrows(
+                        InvalidMechanismConfigurationException.class,
+                        () -> MechanismConfiguration.builder("claw")
+                                .construct(MechanismConstruct.CLAW)
+                                .actuators(ActuatorTopology.positionalServo())
+                                .enable(Capability.NAMED_STATES)
+                                .controlDomain(ControlDomain.NAMED_STATE)
+                                .namedStates("OPEN", "", "CLOSED")
+                                .build());
+        assertTrue(empty.result().hasCode(ConfigurationValidator.EMPTY_NAMED_STATE));
+
+        InvalidMechanismConfigurationException blank =
+                assertThrows(
+                        InvalidMechanismConfigurationException.class,
+                        () -> MechanismConfiguration.builder("claw")
+                                .construct(MechanismConstruct.CLAW)
+                                .actuators(ActuatorTopology.positionalServo())
+                                .enable(Capability.NAMED_STATES)
+                                .controlDomain(ControlDomain.NAMED_STATE)
+                                .namedStates("OPEN", "   ")
+                                .build());
+        assertTrue(blank.result().hasCode(ConfigurationValidator.EMPTY_NAMED_STATE));
+
+        InvalidMechanismConfigurationException duplicate =
+                assertThrows(
+                        InvalidMechanismConfigurationException.class,
+                        () -> MechanismConfiguration.builder("claw")
+                                .construct(MechanismConstruct.CLAW)
+                                .actuators(ActuatorTopology.positionalServo())
+                                .enable(Capability.NAMED_STATES)
+                                .controlDomain(ControlDomain.NAMED_STATE)
+                                .namedStates("OPEN", "CLOSED", "OPEN")
+                                .build());
+        assertTrue(duplicate.result().hasCode(ConfigurationValidator.DUPLICATE_NAMED_STATE));
+
+        ValidationResult reported =
+                MechanismConfiguration.builder("claw")
+                        .construct(MechanismConstruct.CLAW)
+                        .actuators(ActuatorTopology.positionalServo())
+                        .namedStates(null, "CLOSED")
+                        .validate();
+        assertFalse(reported.valid());
+        assertTrue(reported.hasCode(ConfigurationValidator.EMPTY_NAMED_STATE));
     }
 
     @Test
@@ -264,6 +334,13 @@ class MechanismConfigurationTest {
                 .construct(MechanismConstruct.ROLLER_INTAKE)
                 .actuators(ActuatorTopology.singleMotor())
                 .controlDomain(ControlDomain.OPEN_LOOP_EFFORT)
+                .build();
+        MechanismConfiguration.builder("claw")
+                .construct(MechanismConstruct.CLAW)
+                .actuators(ActuatorTopology.positionalServo())
+                .enable(Capability.NAMED_STATES)
+                .controlDomain(ControlDomain.NAMED_STATE)
+                .namedStates("OPEN", "CLOSED", "HOLDING")
                 .build();
         assertEquals(0, actuator.outputWriteCount());
         assertEquals(0.0, actuator.power(), 1e-9);
