@@ -1,8 +1,12 @@
-# Allsparks elevator target (do not invent hardware)
+# Allsparks elevator target — not this season
 
-The first **intended** real mechanism is a counterbalanced elevator with a ratchet. Until parts are selected, MIMIC implements **no elevator-specific controller**.
+**Superseded 15 Sep 2026.** BumbleBee will not build an elevator for BIOBUZZ.
 
-## Stated design intent (planning, not BOM)
+Current mechanism list: [biobuzz-mechanism-targets.md](biobuzz-mechanism-targets.md) (intake + color reject, feeder, turret, hood, optional FLOWER tray).
+
+The notes below are historical planning only. Do not implement elevator-specific controllers from this file.
+
+## Stated design intent (archived)
 
 - Two elevator towers
 - Drawer-slide stages
@@ -11,28 +15,5 @@ The first **intended** real mechanism is a counterbalanced elevator with a ratch
 - Up and down cable paths
 - Possible independent tower sensing (**unconfirmed**)
 - Ratchet engagement and release (**sensor unconfirmed**)
-- Gravity load and safe holding
-- Possible mechanical lock
-- Interaction with AMPER
 
-## Must be documented before elevator code
-
-| Question | Status |
-|----------|--------|
-| Actual sensor arrangement | **Unknown** |
-| Independently actuated sides? | **Unknown** |
-| Independently measurable sides? | **Unknown** |
-| Common shaft mechanically enforcing sync? | **Unknown** |
-| Safe homing direction | **Unknown** — do not guess “down” |
-| Physical limits / hard stops | **Unknown** |
-| Ratchet state sensing | **Unknown** |
-| Behavior after power loss | **Unknown** |
-| Minimum holding effort | **Unknown** — counterbalance may reduce but not eliminate hold |
-
-## Sync implication
-
-If a common shaft **mechanically** ties both sides, independent PID correction can fight the structure. If sides are independent, disagreement monitoring matters. **Do not implement Phase 5 anti-racking until this is known.**
-
-## Phase 0 use
-
-Observe whatever motor and DIO you eventually wire, using generic `MechanismUnits` and `MimicSession`. Extract reusable elevator classes only after the real mechanism exists.
+Do not invent that hardware.
