@@ -43,7 +43,7 @@ Columns:
 | Validity enum | Exists | closed #25–#28 | — | None | none | 0 | yes | fake HW |
 | Fixed pose/velocity/current/limits | Exists `MechanismObserver` | — | — | None | none | 0 | yes | fake HW |
 | Named role samples on snapshot | Exists `sample` / `role` extras | [#53](https://github.com/The-Allsparks/MIMIC/issues/53) | config | None | none | 0–1 | yes | fake HW |
-| Piece entry/exit/count observation | Missing | [#54](https://github.com/The-Allsparks/MIMIC/issues/54) | snapshot roles | None | optional sensors | 1 | yes | fake digital |
+| Piece entry/exit/count observation | Exists `PieceObservation` | [#54](https://github.com/The-Allsparks/MIMIC/issues/54) | snapshot roles | None | optional sensors | 1 | yes | fake digital |
 | Debounce / edge utilities | Missing | [#55](https://github.com/The-Allsparks/MIMIC/issues/55) | snapshot | None | none | 0–2 | yes | yes |
 | Passive REV adapters | Exists supplier-based | #6 blocked on robot; #34 packaging | #34 | None | Hub | 0–1 | stubs later | n/a |
 | Logger / TRACE field names | Exists CSV; not TRACE schema | #32 allocation | — | None | none | 0 | yes | n/a |

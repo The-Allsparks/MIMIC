@@ -71,6 +71,8 @@ Immutable once-per-loop observation. Never used to write hardware. Position and 
 
 Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` return a `RoleSample` with either a `SensorSample` or a `LimitSwitchSample`. Declared roles such as piece-entry live here; they have no first-class snapshot field. Missing names or roles are `UNSUPPORTED` on both sides, not a fake `false` / not-asserted reading. Do not invent values. `role(RELATIVE_POSITION)` / `role(VELOCITY)` / `role(RETRACT_LIMIT)` / `role(EXTEND_LIMIT)` / `role(ABSOLUTE_POSITION)` / `role(REDUNDANT_POSITION)` still expose the existing fields. Extra optional suppliers do not replace those fields.
 
+`PieceObservation.from(snapshot)` is observe-only presence and count on those extras. `PIECE_ENTRY` / `PIECE_EXIT` report `VALID`, `MISSING`, or `UNSUPPORTED`. A missing sensor is unknown occupancy, not empty. A `VALID` count of `0` is known empty; an unwired count is unknown, not zero. Identity, capacity, and reconcile stay out ([#64](https://github.com/The-Allsparks/MIMIC/issues/64)). No actuation.
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.

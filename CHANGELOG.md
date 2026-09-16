@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- Observe-only piece presence and count (`PieceObservation`) from `PIECE_ENTRY` / `PIECE_EXIT` / `PIECE_COUNT`. Missing or unwired sensors are unknown occupancy, not empty and not a count of zero. No identity tracker and no actuation ([#54](https://github.com/The-Allsparks/MIMIC/issues/54)).
 - Optional named extras on `MechanismSnapshot` (`sample(name)` / `role(SensorRole)`). Missing lookups are `UNSUPPORTED`, not a fake `false`. Extra suppliers do not replace position, velocity, or limit fields and do not write hardware ([#53](https://github.com/The-Allsparks/MIMIC/issues/53)).
 - Immutable named-state name sets on `MechanismConfiguration` (`.namedStates(...)`). Metadata only; empty and duplicate names are rejected. Does not schedule motion ([#52](https://github.com/The-Allsparks/MIMIC/issues/52)).
 - Generic mechanism catalog research ([generic-mechanism-catalog.md](docs/mechanism-control/generic-mechanism-catalog.md)) and gap matrix ([generic-mechanism-gap-matrix.md](docs/mechanism-control/generic-mechanism-gap-matrix.md)).

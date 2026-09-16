@@ -177,10 +177,10 @@ Phase 0 `MechanismObserver` still has fixed channels (position, velocity, curren
 | `RETRACT_LIMIT` | Limit/touch, Hall | asserted boolean | Home/retract | Yes, if usable | Missing is not "not asserted" |
 | `EXTEND_LIMIT` | Limit/touch, Hall | asserted boolean | Rarely | Yes, if usable | Same |
 | `HOME_INDEX` | Index pulse, Hall, switch | asserted or edge | Yes | Usually not a travel stop | Cannot home-on-index |
-| `PIECE_ENTRY` | Beam-break, color, distance | asserted / class | No | No | Run without acquisition detect |
-| `PIECE_EXIT` | Beam-break | asserted | No | No | Counting degrades |
+| `PIECE_ENTRY` | Beam-break, color, distance | asserted / class | No | No | Unknown presence, not empty |
+| `PIECE_EXIT` | Beam-break | asserted | No | No | Unknown occupancy; counting degrades |
 | `PIECE_IDENTITY` | Color / vision class | enum-like string in TeamCode | No | No | Unknown identity |
-| `PIECE_COUNT` | Derived or dedicated counter | integer | No | No | Unknown occupancy |
+| `PIECE_COUNT` | Derived or dedicated counter | integer | No | No | Unknown occupancy, not zero |
 | `ACTUATOR_CURRENT` | Hub `getCurrent` | A | Stall-home only if **explicitly** permitted | Never the only hard limit | Stall detection off |
 | `MOTOR_TEMPERATURE` | When a device reports it | deg | No | Thermal degrade later | Unsupported |
 | `LOAD_TENSION` | Load cell | N or team unit | No | Load limit later | Climb/grip force unknown |
@@ -266,9 +266,15 @@ Semantic names such as `STOWED`/`SCORING` belong in TeamCode or later Phase 6. T
 | Readiness | Position/velocity tolerance, dwell, at-speed, transition complete, acquired, feeder ready, homed, interlock, timeout, faulted | later pure functions |
 | Faults | Invalid, disagree, unexpected limit, stall, jam, skew, failed home, timeout, unexpected motion, lost calibration, insufficient AMPER grant, latch unknown | 8; severities already in [safety-model.md](safety-model.md) |
 | Interlocks | Named constraints; reject / defer / clamp / intermediate / confirm; no deadlock scheduler | 7 |
-| Piece tracking | Presence, identity, entry/exit, count, capacity, occupancy, confidence, reconcile, unknown, reject routing | optional subsystem; no season piece names |
+| Piece tracking | Observe-only presence/count now (`PieceObservation` from `PIECE_ENTRY` / `PIECE_EXIT` / `PIECE_COUNT`). Missing sensor is unknown occupancy, not empty. Identity, capacity, occupancy reconcile, confidence, reject routing wait for [#64](https://github.com/The-Allsparks/MIMIC/issues/64) | [#54](https://github.com/The-Allsparks/MIMIC/issues/54) observe; tracker later; no season piece names |
 
 MIMIC owns mechanism safety. AMPER only grants or limits electrical allocation ([amper-integration.md](amper-integration.md)). SHIFT semantic intents and HELM orchestration stay outside MIMIC. TRACE may later sink `MimicEventLogger` fields. The FTC OpMode remains the composition root.
+
+### 7.1 Piece presence and count (observe-only)
+
+`PieceObservation.from(snapshot)` ([PieceObservation.java](../../src/main/java/org/allsparks/mimic/observe/PieceObservation.java)) reads `snapshot.role(SensorRole.PIECE_ENTRY)`, `PIECE_EXIT`, and `PIECE_COUNT`. Presence is `VALID`, `MISSING`, or `UNSUPPORTED`. A missing or unwired beam-break is unknown occupancy, not empty. A `VALID` count of `0` is known empty; an omitted count channel is unknown, not zero. Students should check `isUnknown()` / `occupancyUnknown()` before treating `present() == false` as an empty path.
+
+This is not a tracker. Core Java must not name season pieces. Identity strings, pocket capacity, confidence, reconcile, and reject routing stay in [#64](https://github.com/The-Allsparks/MIMIC/issues/64). No actuation.
 
 ---
 
@@ -355,8 +361,8 @@ Answers to the architecture questions:
 
 ## 12. Implementation slice (this repository)
 
-Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49), [#50](https://github.com/The-Allsparks/MIMIC/issues/50), [#51](https://github.com/The-Allsparks/MIMIC/issues/51), [#52](https://github.com/The-Allsparks/MIMIC/issues/52).
+Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, snapshot role extras, observe-only piece presence/count (`PieceObservation`), validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#54](https://github.com/The-Allsparks/MIMIC/issues/54).
 
-Forbidden now: motor/servo writes, homing motion, limit enforcement, controllers, interlock engines, piece-tracker runtime, Phase 2–10 flags. Follow-up issues: [#52](https://github.com/The-Allsparks/MIMIC/issues/52)–[#70](https://github.com/The-Allsparks/MIMIC/issues/70). Active control remains behind [#69](https://github.com/The-Allsparks/MIMIC/issues/69).
+Forbidden now: motor/servo writes, homing motion, limit enforcement, controllers, interlock engines, piece-tracker runtime, Phase 2–10 flags. Follow-up issues: [#55](https://github.com/The-Allsparks/MIMIC/issues/55)–[#70](https://github.com/The-Allsparks/MIMIC/issues/70). Active control remains behind [#69](https://github.com/The-Allsparks/MIMIC/issues/69).
 
-Java: `org.allsparks.mimic.templates` (families/constructs/blueprints) and `org.allsparks.mimic.config` (configuration).
+Java: `org.allsparks.mimic.templates` (families/constructs/blueprints), `org.allsparks.mimic.config` (configuration), and `org.allsparks.mimic.observe` (snapshot extras and `PieceObservation`).
