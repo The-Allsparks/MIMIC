@@ -44,7 +44,10 @@ public final class MimicFeatureFlags {
         return new Builder();
     }
 
-    /** Phase 0 + Phase 1 only. No motor or servo output. */
+    /**
+     * Phase 0 plus desktop Phase 1 log extras. Does not enable motor or
+     * servo output; {@link #isAnyActuationEnabled()} stays false.
+     */
     public static MimicFeatureFlags passiveObservation() {
         return builder().phase1PassiveObservation(true).build();
     }
@@ -53,6 +56,10 @@ public final class MimicFeatureFlags {
         return phase0Contracts;
     }
 
+    /**
+     * Desktop observation extras only. Default {@code false}. Does not
+     * actuate and is not counted by {@link #isAnyActuationEnabled()}.
+     */
     public boolean isPhase1PassiveObservation() {
         return phase1PassiveObservation;
     }
@@ -93,7 +100,10 @@ public final class MimicFeatureFlags {
         return phase10Simulation;
     }
 
-    /** True if any feature that may command motors or servos is enabled. */
+    /**
+     * True if any feature that may command motors or servos is enabled.
+     * Phase 0 and Phase 1 extras are not actuation.
+     */
     public boolean isAnyActuationEnabled() {
         return phase2Calibration
                 || phase3Limits

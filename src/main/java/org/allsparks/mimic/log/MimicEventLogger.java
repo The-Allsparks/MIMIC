@@ -42,6 +42,16 @@ public final class MimicEventLogger {
     }
 
     public void recordObservation(MechanismSnapshot snapshot) {
+        recordObservation(snapshot, Collections.emptyMap());
+    }
+
+    /**
+     * Records a snapshot. {@code extraFields} are appended after the Phase 0
+     * keys so a Phase 1 session can add desktop-only columns without changing
+     * the default set. Empty extras leave Phase 0 fields unchanged. Does not
+     * write hardware.
+     */
+    public void recordObservation(MechanismSnapshot snapshot, Map<String, String> extraFields) {
         Objects.requireNonNull(snapshot, "snapshot");
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("id", snapshot.mechanismId());
@@ -61,6 +71,9 @@ public final class MimicEventLogger {
         fields.put("sensorValid", Boolean.toString(snapshot.sensorValid()));
         fields.put("disagree", format(snapshot.disagreement()));
         fields.put("loopNs", Long.toString(snapshot.loopDurationNanos()));
+        if (extraFields != null && !extraFields.isEmpty()) {
+            fields.putAll(extraFields);
+        }
         MimicEventType type = snapshot.sensorValid() ? MimicEventType.LOOP_SAMPLE : MimicEventType.SENSOR_INVALID;
         record(new MimicEvent(snapshot.timestampNanos(), type, "observation", fields));
     }

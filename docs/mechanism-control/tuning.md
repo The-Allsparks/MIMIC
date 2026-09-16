@@ -17,7 +17,7 @@ Phase 0 has **no motion gains**. Tune observation first.
 | Flag | Default | Effect |
 |------|---------|--------|
 | Phase 0 contracts | on | Observation session allowed |
-| Phase 1 passive observation | off | Reserved for richer telemetry |
+| Phase 1 passive observation | off | Desktop extras: `absValid`, `redundantValid`, `droppedCount`. Does not actuate or draw Driver Station graphics. |
 | Phase 2–10 | off | Must stay off until review |
 
 `MimicSession` **throws** if any actuation flag is true.

@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- When `MimicFeatureFlags.passiveObservation()` is on, `MimicSession.observe()` appends desktop-only log extras (`absValid`, `redundantValid`, `droppedCount`) without writing actuators. Default stays off. Driver Station / on-robot telemetry remains [#6](https://github.com/The-Allsparks/MIMIC/issues/6) ([#29](https://github.com/The-Allsparks/MIMIC/issues/29)).
 - Generic mechanism templates: families Intake, Transfer (internal path; not "shoot"), Launcher, and Lift, with constructs including roller intake, feeder, flywheel, catapult, spinapult, turret, hood, and elevator (`org.allsparks.mimic.templates`). Catalog only; no actuation.
 - Initial public repository scaffold for The Allsparks FTC Team 36117.
 - Phase 0 `STALE` is documented and tested as observer liveness (gap since the previous `capture()` start), not Control Hub sample age. `staleAfterNanos <= 0` remains the default off switch ([#25](https://github.com/The-Allsparks/MIMIC/issues/25)).

@@ -20,5 +20,8 @@ class MimicFeatureFlagsTest {
         MimicFeatureFlags flags = MimicFeatureFlags.passiveObservation();
         assertTrue(flags.isPhase1PassiveObservation());
         assertFalse(flags.isAnyActuationEnabled());
+        assertTrue(flags.isPhase0Contracts());
+        assertFalse(flags.isPhase2Calibration());
+        assertFalse(flags.isPhase4ProfiledControl());
     }
 }
