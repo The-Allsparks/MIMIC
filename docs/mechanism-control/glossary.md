@@ -15,6 +15,7 @@
 | **Absolute encoder** | Sensor with a fixed origin (“clock”), not just a count since reset. |
 | **Incremental encoder** | Quadrature count (“stopwatch”) from a chosen zero. |
 | **Calibration** | Trust that software pose matches physical pose. |
+| **Calibration contract** | Declared homing bounds (direction, max travel, timeout, debounce, encoder reset policy). Not permission to move. |
 | **Homing** | Procedure that establishes calibration. |
 | **Zeroing** | Relabeling the current count as zero; not automatically a home. |
 | **Hard limit** | Physical stop or switch that must not be driven further into. |

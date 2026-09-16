@@ -27,6 +27,9 @@ public final class ConfigurationValidator {
     public static final String REQUIRED_SENSOR_IGNORE_OPTIONAL = "REQUIRED_SENSOR_IGNORE_OPTIONAL";
     public static final String EMPTY_NAMED_STATE = "EMPTY_NAMED_STATE";
     public static final String DUPLICATE_NAMED_STATE = "DUPLICATE_NAMED_STATE";
+    public static final String CALIBRATION_TIMEOUT_REQUIRED = "CALIBRATION_TIMEOUT_REQUIRED";
+    public static final String CALIBRATION_MAX_TRAVEL_REQUIRED = "CALIBRATION_MAX_TRAVEL_REQUIRED";
+    public static final String CALIBRATION_STRATEGY_MISMATCH = "CALIBRATION_STRATEGY_MISMATCH";
 
     private ConfigurationValidator() {}
 
@@ -74,6 +77,17 @@ public final class ConfigurationValidator {
                     HOMING_WITHOUT_REFERENCE,
                     "homing",
                     "HOMING requires a home/index/limit/absolute reference or a known-pose calibration strategy"));
+        }
+
+        CalibrationContract contract = configuration.calibrationContract().orElse(null);
+        if (contract != null) {
+            if (contract.strategy() != configuration.calibrationStrategy()) {
+                issues.add(new ValidationIssue(
+                        CALIBRATION_STRATEGY_MISMATCH,
+                        "calibrationContract",
+                        "calibration contract strategy must match calibrationStrategy"));
+            }
+            contract.collectBoundIssues(issues);
         }
 
         boolean wantsSoft = configuration.capabilities().contains(Capability.SOFT_LIMITS)
@@ -163,8 +177,28 @@ public final class ConfigurationValidator {
         return ValidationResult.of(issues);
     }
 
-    private static boolean hasHomingReference(
+    /**
+     * True when the configuration already names a homing reference. A
+     * {@link CalibrationContract} is not itself a reference and does not
+     * enable {@link CalibrationStrategy#HARD_STOP_CURRENT} without current
+     * sensing.
+     */
+    public static boolean hasHomingReference(MechanismConfiguration configuration) {
+        if (configuration == null) {
+            return false;
+        }
+        EnumSet<SensorRole> roles = EnumSet.noneOf(SensorRole.class);
+        for (SensorDeclaration sensor : configuration.sensors()) {
+            roles.add(sensor.role());
+        }
+        return hasHomingReference(configuration, roles);
+    }
+
+    static boolean hasHomingReference(
             MechanismConfiguration configuration, EnumSet<SensorRole> roles) {
+        if (configuration == null) {
+            return false;
+        }
         CalibrationStrategy strategy = configuration.calibrationStrategy();
         if (strategy == CalibrationStrategy.KNOWN_STARTUP_POSE
                 || strategy == CalibrationStrategy.ABSOLUTE_SENSOR

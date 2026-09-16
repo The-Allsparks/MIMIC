@@ -30,6 +30,7 @@ public final class MechanismConfiguration {
     private final EnumSet<Capability> capabilities;
     private final Map<SensorRole, DegradedBehavior> degradedBehaviors;
     private final CalibrationStrategy calibrationStrategy;
+    private final CalibrationContract calibrationContract;
     private final ControlDomain controlDomain;
     private final LimitPolicy limitPolicy;
     private final List<String> namedStates;
@@ -45,6 +46,7 @@ public final class MechanismConfiguration {
                         : EnumSet.copyOf(builder.capabilities);
         this.degradedBehaviors = Collections.unmodifiableMap(new EnumMap<>(builder.degradedBehaviors));
         this.calibrationStrategy = builder.calibrationStrategy;
+        this.calibrationContract = builder.calibrationContract;
         this.controlDomain = builder.controlDomain;
         this.limitPolicy = builder.limitPolicy;
         this.namedStates = Collections.unmodifiableList(new ArrayList<>(builder.namedStates));
@@ -95,6 +97,14 @@ public final class MechanismConfiguration {
         return calibrationStrategy;
     }
 
+    /**
+     * Optional homing bounds. Absent by default. Presence does not run
+     * homing and does not write hardware.
+     */
+    public Optional<CalibrationContract> calibrationContract() {
+        return Optional.ofNullable(calibrationContract);
+    }
+
     public ControlDomain controlDomain() {
         return controlDomain;
     }
@@ -131,6 +141,7 @@ public final class MechanismConfiguration {
         private final EnumMap<SensorRole, DegradedBehavior> degradedBehaviors =
                 new EnumMap<>(SensorRole.class);
         private CalibrationStrategy calibrationStrategy = CalibrationStrategy.NONE;
+        private CalibrationContract calibrationContract;
         private ControlDomain controlDomain = ControlDomain.PASSIVE_OBSERVATION;
         private LimitPolicy limitPolicy = LimitPolicy.NONE;
         private final List<String> namedStates = new ArrayList<>();
@@ -183,6 +194,20 @@ public final class MechanismConfiguration {
         public Builder calibrationStrategy(CalibrationStrategy calibrationStrategy) {
             this.calibrationStrategy =
                     calibrationStrategy == null ? CalibrationStrategy.NONE : calibrationStrategy;
+            return this;
+        }
+
+        /**
+         * Attach an optional {@link CalibrationContract}. {@code null} leaves
+         * the contract absent. A non-null contract copies its strategy onto
+         * {@link #calibrationStrategy(CalibrationStrategy)} so existing
+         * strategy-only builders stay valid.
+         */
+        public Builder calibrationContract(CalibrationContract calibrationContract) {
+            this.calibrationContract = calibrationContract;
+            if (calibrationContract != null) {
+                this.calibrationStrategy = calibrationContract.strategy();
+            }
             return this;
         }
 

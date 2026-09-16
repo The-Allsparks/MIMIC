@@ -52,7 +52,7 @@ Columns:
 
 | Capability | Code | Issue | Dep | Output risk | Hardware | Phase | Unit | Sim |
 |------------|------|-------|-----|-------------|----------|-------|------|-----|
-| Calibration strategy **contracts** | `CalibrationState` enum only | [#56](https://github.com/The-Allsparks/MIMIC/issues/56); parent #8 | config | None if declaration-only | none | 0 docs / 2 impl | yes | later |
+| Calibration strategy **contracts** | `CalibrationContract` declaration-only; session UNCALIBRATED | [#56](https://github.com/The-Allsparks/MIMIC/issues/56); parent #8 | config | None if declaration-only | none | 0 docs / 2 impl | yes | later |
 | Homing motion | Missing; session always UNCALIBRATED | #8, #9 | robot observation | **High** | robot | 2 | partial | later |
 | Limit policy **contracts** | Limit samples exist | [#57](https://github.com/The-Allsparks/MIMIC/issues/57); parent #11 | config | None if declaration-only | none | 0 docs / 3 impl | yes | later |
 | Actuator safety gate | Docs only | #10; review [#69](https://github.com/The-Allsparks/MIMIC/issues/69) | calibration + limits | **High** | robot | 3 | yes gate fn | later |

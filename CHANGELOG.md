@@ -9,6 +9,7 @@ and this project aims to adhere to [Semantic Versioning](https://semver.org/spec
 
 ### Added
 
+- Immutable `CalibrationContract` (direction, max travel, timeout, debounce, encoder reset policy) attached optionally to `MechanismConfiguration`. Declaration only: missing timeout/travel are rejected for homing-capable strategies, `HARD_STOP_CURRENT` stays blocked, and `MimicSession` remains `UNCALIBRATED` / `NO_ACTIVE_CONTROL` ([#56](https://github.com/The-Allsparks/MIMIC/issues/56)).
 - Observe-only piece presence and count (`PieceObservation`) from `PIECE_ENTRY` / `PIECE_EXIT` / `PIECE_COUNT`. Missing or unwired sensors are unknown occupancy, not empty and not a count of zero. No identity tracker and no actuation ([#54](https://github.com/The-Allsparks/MIMIC/issues/54)).
 - Optional named extras on `MechanismSnapshot` (`sample(name)` / `role(SensorRole)`). Missing lookups are `UNSUPPORTED`, not a fake `false`. Extra suppliers do not replace position, velocity, or limit fields and do not write hardware ([#53](https://github.com/The-Allsparks/MIMIC/issues/53)).
 - Immutable named-state name sets on `MechanismConfiguration` (`.namedStates(...)`). Metadata only; empty and duplicate names are rejected. Does not schedule motion ([#52](https://github.com/The-Allsparks/MIMIC/issues/52)).

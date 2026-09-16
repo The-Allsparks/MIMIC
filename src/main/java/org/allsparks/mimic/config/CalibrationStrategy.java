@@ -1,8 +1,9 @@
 package org.allsparks.mimic.config;
 
 /**
- * Declared calibration strategy. Phase 0 never homes. Hard-stop current
- * detection is permitted only when a later phase explicitly enables it.
+ * Declared calibration strategy. Phase 0 never homes. Optional
+ * {@link CalibrationContract} bounds do not run homing. Hard-stop current
+ * detection stays blocked: declaring a contract must not enable it.
  */
 public enum CalibrationStrategy {
     NONE,
