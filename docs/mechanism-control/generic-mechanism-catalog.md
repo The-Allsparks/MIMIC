@@ -264,7 +264,7 @@ Semantic names such as `STOWED`/`SCORING` belong in TeamCode or later Phase 6. T
 | Control domains | Effort, voltage-compensated effort, velocity, position, profiled position, discrete index, named state, stored-energy, passive | 4+ adapters (blocked) |
 | Feedforward seams | Simple rotating, flywheel, vertical linear, arm gravity, horizontal extension, external adapter | 4 (no unvalidated math now) |
 | Readiness | Position/velocity tolerance, dwell, at-speed, transition complete, acquired, feeder ready, homed, interlock, timeout, faulted | `Readiness.atSpeed` / `inTolerance` now ([#59](https://github.com/The-Allsparks/MIMIC/issues/59)); feeder/homed/interlock later |
-| Faults | Invalid, disagree, unexpected limit, stall, jam, skew, failed home, timeout, unexpected motion, lost calibration, insufficient AMPER grant, latch unknown | 8; severities already in [safety-model.md](safety-model.md) |
+| Faults | Invalid, disagree, unexpected limit, stall, jam, skew, failed home, timeout, unexpected motion, lost calibration, insufficient AMPER grant, latch unknown | Observe-only stall/jam suspicion now ([#60](https://github.com/The-Allsparks/MIMIC/issues/60)); reverse-clear / Phase 8 recovery later |
 | Interlocks | Named constraints; reject / defer / clamp / intermediate / confirm; no deadlock scheduler | 7 |
 | Piece tracking | Observe-only presence/count now (`PieceObservation` from `PIECE_ENTRY` / `PIECE_EXIT` / `PIECE_COUNT`). Missing sensor is unknown occupancy, not empty. Identity, capacity, occupancy reconcile, confidence, reject routing wait for [#64](https://github.com/The-Allsparks/MIMIC/issues/64) | [#54](https://github.com/The-Allsparks/MIMIC/issues/54) observe; tracker later; no season piece names |
 
@@ -281,6 +281,10 @@ This is not a tracker. Core Java must not name season pieces. Identity strings, 
 `Readiness.atSpeed(snapshot, minVel, hysteresis, dwellNanos)` ([Readiness.java](../../src/main/java/org/allsparks/mimic/observe/Readiness.java)) reads `snapshot.velocitySample()`. One valid loop at or above `minVel` is not ready: dwell must elapse on consecutive usable samples. `MISSING` / `UNSUPPORTED` / `STALE` (and other non-usable) velocity is not at-speed and resets the window. After ready, dropping slightly below `minVel` stays ready until velocity falls through `minVel - hysteresis`. `Readiness.inTolerance(snapshot, target, tolerance, hysteresis, dwellNanos)` is the position dual (`tolerance + hysteresis` to stay). `feed(snapshot)` returns a new immutable evaluator; it does not write hardware. `MimicSession` does not call it.
 
 This is not a feeder interlock engine and does not fire a launcher. Homed, acquired, timeout, and faulted remain later.
+
+### 7.3 Stall and jam suspicion (observe-only)
+
+`StallDetector.update(snapshot)` ([StallDetector.java](../../src/main/java/org/allsparks/mimic/observe/StallDetector.java)) reads `snapshot.currentAmps()` and `snapshot.velocitySample()`. A stall is high current plus no motion for a required timeout, not a single current sample. One qualifying loop is not suspected. Missing, NaN, or unwired current is unsupported, not stalled. Unusable velocity is also unsupported: current-only is not a hard limit. `JamDetector` / `JamSuspicion` use the same heuristic. `update` does not write hardware. `MimicSession` does not call it. Reverse-clear and bounded jam clearing ([#20](https://github.com/The-Allsparks/MIMIC/issues/20)) stay forbidden. Do not enable `MimicFeatureFlags.phase8Faults`.
 
 ---
 
@@ -367,8 +371,8 @@ Answers to the architecture questions:
 
 ## 12. Implementation slice (this repository)
 
-Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, snapshot role extras, observe-only piece presence/count (`PieceObservation`), pure `Readiness` at-speed / in-tolerance evaluation, validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Catalog metadata tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#54](https://github.com/The-Allsparks/MIMIC/issues/54); readiness as [#59](https://github.com/The-Allsparks/MIMIC/issues/59).
+Allowed now: families, constructs, topology, sensor roles, capabilities, immutable configuration, named-state name sets, snapshot role extras, observe-only piece presence/count (`PieceObservation`), pure `Readiness` at-speed / in-tolerance evaluation, observe-only stall/jam suspicion (`StallDetector` / `JamDetector`), validation, tests, this document, [gap matrix](generic-mechanism-gap-matrix.md). Catalog metadata tracked as [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#54](https://github.com/The-Allsparks/MIMIC/issues/54); readiness as [#59](https://github.com/The-Allsparks/MIMIC/issues/59); stall/jam as [#60](https://github.com/The-Allsparks/MIMIC/issues/60).
 
 Forbidden now: motor/servo writes, homing motion, limit enforcement, controllers, interlock engines, piece-tracker runtime, Phase 2–10 flags. Follow-up issues: [#55](https://github.com/The-Allsparks/MIMIC/issues/55)–[#70](https://github.com/The-Allsparks/MIMIC/issues/70). Active control remains behind [#69](https://github.com/The-Allsparks/MIMIC/issues/69).
 
-Java: `org.allsparks.mimic.templates` (families/constructs/blueprints), `org.allsparks.mimic.config` (configuration), and `org.allsparks.mimic.observe` (snapshot extras, `PieceObservation`, `Readiness`).
+Java: `org.allsparks.mimic.templates` (families/constructs/blueprints), `org.allsparks.mimic.config` (configuration), and `org.allsparks.mimic.observe` (snapshot extras, `PieceObservation`, `Readiness`, `StallDetector`).

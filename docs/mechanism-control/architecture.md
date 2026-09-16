@@ -75,6 +75,8 @@ Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` 
 
 `Readiness.atSpeed(snapshot, minVel, hysteresis, dwellNanos)` is pure settling evaluation over velocity (position dual: `inTolerance`). One usable loop inside the band is not ready; dwell must elapse. Invalid velocity is not at-speed. `feed` returns a new evaluator and does not write hardware. Not a feeder interlock ([#59](https://github.com/The-Allsparks/MIMIC/issues/59)).
 
+`StallDetector.update(snapshot)` is observe-only stall suspicion from current, velocity, and a required timeout. Missing / NaN current is unsupported, not stalled. `JamDetector` uses the same heuristic. Neither writes hardware, reverse-clears, nor is called by `MimicSession` ([#60](https://github.com/The-Allsparks/MIMIC/issues/60)).
+
 ## `CalibrationManager` (Phase 2 — not implemented)
 
 Owns homing strategy, direction, max output, max travel, timeout, debounce, encoder reset policy, completion, invalidation.
@@ -97,7 +99,7 @@ Named constraints: calibration, geometry, other mechanisms, ratchet/brake, robot
 
 ## `FaultMonitor` (Phase 8)
 
-Stale sensors, unexpected motion, no motion despite output, jumps, limit disagreement, actuator disagreement, timeout, calibration loss, stall suspicion.
+Stale sensors, unexpected motion, no motion despite output, jumps, limit disagreement, actuator disagreement, timeout, calibration loss, stall suspicion. Observe-only `StallDetector` / `JamDetector` exist unused by session; reverse-clear and Phase 8 recovery stay unimplemented.
 
 ## `ActuatorSafetyGate` (Phase 3+)
 

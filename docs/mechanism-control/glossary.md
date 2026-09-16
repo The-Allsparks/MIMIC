@@ -32,7 +32,8 @@
 | **Integral windup** | Integral growing while saturated, causing overshoot when released. |
 | **Interlock** | Named constraint involving this mechanism and another state. |
 | **Backdrive** | External torque turning the actuator. |
-| **Stall** | Commanded effort with little or no motion, often high current. |
+| **Stall** | High current plus no motion for a timeout, not a single current sample. Observe-only `StallDetector` / `StallSuspicion`. Missing current is unsupported, not stalled. Not a reverse-clear. |
+| **Jam** | Same observe heuristic as stall (`JamDetector` / `JamSuspicion`). Reverse-clear remains forbidden. |
 | **Synchronization** | Keeping multiple actuators consistent. |
 | **Anti-racking** | Preventing structural twist from side-to-side disagreement. |
 | **Degraded operation** | Reduced capability while remaining as safe as possible. |

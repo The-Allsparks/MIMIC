@@ -76,7 +76,7 @@ Columns:
 | Fault / degraded policy | Docs severities; session DEGRADED on invalid | [#63](https://github.com/The-Allsparks/MIMIC/issues/63); parent #20 | config degraded map | None if policy only | none | 0 docs / 8 impl | yes | fake |
 | Fault recovery that moves | Missing | #20 | #10 | **High** | robot | 8 | partial | later |
 | Piece tracker | Missing | [#64](https://github.com/The-Allsparks/MIMIC/issues/64) | piece observe | None if observe-only | sensors | 1+ | yes | yes |
-| Jam / stall detect | Docs heuristic | [#60](https://github.com/The-Allsparks/MIMIC/issues/60) (observe first) | current+velocity | None until it writes reverse | none | 1 then 8 | yes | fake |
+| Jam / stall detect | Observe-only `StallDetector` / `JamDetector`; unused by session | [#60](https://github.com/The-Allsparks/MIMIC/issues/60) | current+velocity+timeout | None (no reverse-clear) | none | 1 then 8 | yes | fake |
 | Richer presets | This PR suggestions only | [#65](https://github.com/The-Allsparks/MIMIC/issues/65) | this PR | None | none | 0 | yes | n/a |
 
 ## E. Integration, sim, active enablement

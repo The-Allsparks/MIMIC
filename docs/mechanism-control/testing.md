@@ -2,7 +2,7 @@
 
 ## Unit tests (this scaffold)
 
-Covered now: unit conversion, direction, observer snapshots, missing/disconnected sensors, disagreement, observer-liveness `STALE` (`staleAfterNanos`), goal rejection, feature flags, AMPER unrestricted grant, loop overhead, **zero actuator writes**, documentation links, piece presence/count with fake digital channels (unknown occupancy, not empty), fake `MechanismControllerAdapter` that does not write `FakeActuator`, `Readiness` synthetic velocity traces (below, above, bounce, invalid, dwell, hysteresis) with `FakeActuator` writes at 0.
+Covered now: unit conversion, direction, observer snapshots, missing/disconnected sensors, disagreement, observer-liveness `STALE` (`staleAfterNanos`), goal rejection, feature flags, AMPER unrestricted grant, loop overhead, **zero actuator writes**, documentation links, piece presence/count with fake digital channels (unknown occupancy, not empty), fake `MechanismControllerAdapter` that does not write `FakeActuator`, `Readiness` synthetic velocity traces (below, above, bounce, invalid, dwell, hysteresis) with `FakeActuator` writes at 0, `StallDetector` / `JamDetector` high-current zero-velocity traces (below timeout not suspected; after timeout suspected; missing current unsupported; velocity present not stalled) with `FakeActuator` writes at 0.
 
 Later phases must add: debounce, timeout, hard/soft limits, motion away from a limit, deferral, profiles, saturation, anti-windup, sync, interlocks, fault severity, bounded recovery, AMPER clip handling.
 
