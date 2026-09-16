@@ -20,6 +20,7 @@
 | **Zeroing** | Relabeling the current count as zero; not automatically a home. |
 | **Hard limit** | Physical stop or switch that must not be driven further into. |
 | **Soft limit** | Software position bound. |
+| **Limit contract** | Declared soft/hard bounds, stopping margin, wrap policy, and missing-switch rule. Not the Phase 3 actuator safety gate and not permission to move. |
 | **Debounce** | Requiring a switch to stay asserted before trusting it. |
 | **Feedback** | Correction from measured error (e.g. PID). |
 | **Feedforward** | Open-loop term from the model (gravity, friction, \(k_V\), \(k_A\)). |

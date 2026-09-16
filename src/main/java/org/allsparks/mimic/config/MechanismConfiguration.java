@@ -33,6 +33,7 @@ public final class MechanismConfiguration {
     private final CalibrationContract calibrationContract;
     private final ControlDomain controlDomain;
     private final LimitPolicy limitPolicy;
+    private final LimitContract limitContract;
     private final List<String> namedStates;
 
     private MechanismConfiguration(Builder builder) {
@@ -49,6 +50,7 @@ public final class MechanismConfiguration {
         this.calibrationContract = builder.calibrationContract;
         this.controlDomain = builder.controlDomain;
         this.limitPolicy = builder.limitPolicy;
+        this.limitContract = builder.limitContract;
         this.namedStates = Collections.unmodifiableList(new ArrayList<>(builder.namedStates));
     }
 
@@ -114,6 +116,14 @@ public final class MechanismConfiguration {
     }
 
     /**
+     * Optional limit bounds. Absent by default. Presence does not enforce
+     * limits and does not write hardware.
+     */
+    public Optional<LimitContract> limitContract() {
+        return Optional.ofNullable(limitContract);
+    }
+
+    /**
      * Declared pose or cycle names for this instance. Empty when unused. The
      * list is metadata: it does not schedule motion or write hardware.
      */
@@ -144,6 +154,7 @@ public final class MechanismConfiguration {
         private CalibrationContract calibrationContract;
         private ControlDomain controlDomain = ControlDomain.PASSIVE_OBSERVATION;
         private LimitPolicy limitPolicy = LimitPolicy.NONE;
+        private LimitContract limitContract;
         private final List<String> namedStates = new ArrayList<>();
 
         private Builder(String mechanismId) {
@@ -219,6 +230,20 @@ public final class MechanismConfiguration {
 
         public Builder limitPolicy(LimitPolicy limitPolicy) {
             this.limitPolicy = limitPolicy == null ? LimitPolicy.NONE : limitPolicy;
+            return this;
+        }
+
+        /**
+         * Attach an optional {@link LimitContract}. {@code null} leaves the
+         * contract absent. A non-null contract copies its policy onto
+         * {@link #limitPolicy(LimitPolicy)} so existing policy-only builders
+         * stay valid.
+         */
+        public Builder limitContract(LimitContract limitContract) {
+            this.limitContract = limitContract;
+            if (limitContract != null) {
+                this.limitPolicy = limitContract.policy();
+            }
             return this;
         }
 

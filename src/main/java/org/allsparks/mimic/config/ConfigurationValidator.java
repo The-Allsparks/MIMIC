@@ -30,6 +30,12 @@ public final class ConfigurationValidator {
     public static final String CALIBRATION_TIMEOUT_REQUIRED = "CALIBRATION_TIMEOUT_REQUIRED";
     public static final String CALIBRATION_MAX_TRAVEL_REQUIRED = "CALIBRATION_MAX_TRAVEL_REQUIRED";
     public static final String CALIBRATION_STRATEGY_MISMATCH = "CALIBRATION_STRATEGY_MISMATCH";
+    public static final String LIMIT_POLICY_MISMATCH = "LIMIT_POLICY_MISMATCH";
+    public static final String LIMIT_POLICY_REQUIRED = "LIMIT_POLICY_REQUIRED";
+    public static final String LIMIT_SOFT_BOUNDS_REQUIRED = "LIMIT_SOFT_BOUNDS_REQUIRED";
+    public static final String LIMIT_WRAP_PERIOD_REQUIRED = "LIMIT_WRAP_PERIOD_REQUIRED";
+    public static final String LIMIT_INVALID_STOPPING_MARGIN = "LIMIT_INVALID_STOPPING_MARGIN";
+    public static final String LIMIT_LINEAR_BOUNDS_ORDER = "LIMIT_LINEAR_BOUNDS_ORDER";
 
     private ConfigurationValidator() {}
 
@@ -88,6 +94,18 @@ public final class ConfigurationValidator {
                         "calibration contract strategy must match calibrationStrategy"));
             }
             contract.collectBoundIssues(issues);
+        }
+
+        LimitContract limitContract = configuration.limitContract().orElse(null);
+        if (limitContract != null) {
+            if (limitContract.policy() != configuration.limitPolicy()) {
+                issues.add(
+                        new ValidationIssue(
+                                LIMIT_POLICY_MISMATCH,
+                                "limitContract",
+                                "limit contract policy must match limitPolicy"));
+            }
+            limitContract.collectBoundIssues(issues);
         }
 
         boolean wantsSoft = configuration.capabilities().contains(Capability.SOFT_LIMITS)
