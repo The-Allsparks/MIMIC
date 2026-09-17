@@ -9,8 +9,8 @@ import org.allsparks.mimic.config.SensorRole;
  * Reads {@link SensorRole#PIECE_ENTRY}, {@link SensorRole#PIECE_EXIT}, and
  * {@link SensorRole#PIECE_COUNT} through {@link MechanismSnapshot#role}.
  * Missing or unwired sensors are unknown occupancy, not empty and not a
- * count of zero. This is not a piece tracker: no identity, capacity,
- * reconcile, or reject routing. Never writes hardware.
+ * count of zero. Channel observation only: identity, capacity, and
+ * reconcile live on optional {@link PieceTracker}. Never writes hardware.
  */
 public final class PieceObservation {
     private final Presence entry;
