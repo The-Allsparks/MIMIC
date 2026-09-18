@@ -2,7 +2,7 @@
 
 Maps the [catalog](generic-mechanism-catalog.md) onto current MIMIC code and issues.
 
-**Audited tree:** `main` after PR #48 plus this catalog slice. Do not trust older issue text when code differs.
+**Audited tree:** `feat/generic-mechanism-catalog` / [PR #71](https://github.com/The-Allsparks/MIMIC/pull/71) stacked on `main` after PR #48. Do not trust older issue text when code differs.
 
 **New catalog issues:** [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#70](https://github.com/The-Allsparks/MIMIC/issues/70). Do not treat [#70](https://github.com/The-Allsparks/MIMIC/issues/70) or [#69](https://github.com/The-Allsparks/MIMIC/issues/69) as permission to command motors.
 
@@ -87,7 +87,7 @@ Columns:
 | `isAnyActuationEnabled` too broad | Exists; flags 6/10 as actuation | #33 | Phase 6/10 | None | none | 0 | yes | n/a |
 | FTC modules `mimic-core` / `mimic-ftc` | Single Java library | #34 P0 packaging; child pointer [#67](https://github.com/The-Allsparks/MIMIC/issues/67) | policy | None | CI SDK | 0 | SDK job | n/a |
 | Simulation models | Fake actuators only | #22; [#66](https://github.com/The-Allsparks/MIMIC/issues/66) | observation data | None if not connected to output | none | 10 | yes | that is the work |
-| Hardware acceptance suites | [testing.md](testing.md) cards | [#68](https://github.com/The-Allsparks/MIMIC/issues/68) | #6, robot | Low (procedure) | robot | 1+ | no | n/a |
+| Hardware acceptance suites | [testing.md](testing.md) generic cards; family sketches exist | [#68](https://github.com/The-Allsparks/MIMIC/issues/68) | #6, robot | Low (procedure) | robot | 1+ | no | n/a |
 | Active-control safety review | Flag default false | [#69](https://github.com/The-Allsparks/MIMIC/issues/69) | #10 + robot graphs | **High** | robot | 3+ | n/a | n/a |
 | Per-family active implementations | Missing | [#70](https://github.com/The-Allsparks/MIMIC/issues/70) after the gate | active-control gate | **High** | robot | 4–8 | limited | later |
 | SystemCore | Boundary type only | #23 blocked | vendor docs | n/a | future HW | n/a | n/a | n/a |

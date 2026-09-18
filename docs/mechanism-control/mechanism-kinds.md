@@ -25,11 +25,11 @@ Use **transfer**.
 | **Transfer** | Internal path | belt, roller path, indexer, feeder, hopper |
 | **Launcher** | Impart energy so a piece leaves the robot | flywheel, catapult, spinapult, puncher |
 | **Lift** | Linear positioning | elevator, linear slide, capstan, extension, lead-screw |
-| **Arm** | Rotary positioning | pivot, wrist, turret, hood, four-bar |
-| **End effector** | Named-state tool | claw, gate, bucket, latch, hook, pusher |
-| **Climber** | Hang while loaded | winch, hook deployer, ratchet hang |
-| **Field element** | Actuate a field device | carousel, foundation grabber, beacon pusher, marker deployer |
-| **Passive** | Guide or structure | funnel, deployable structure |
+| **Arm** | Rotary positioning | pivot, wrist, turret, hood, four-bar ([sketch](../../examples/arm/README.md)) |
+| **End effector** | Named-state tool | claw, gate, bucket, latch, hook, pusher ([sketch](../../examples/end-effector/README.md)) |
+| **Climber** | Hang while loaded | winch, hook deployer, ratchet hang ([sketch](../../examples/climber/README.md)) |
+| **Field element** | Actuate a field device | carousel, foundation grabber, beacon pusher, marker deployer ([sketch](../../examples/field-element/README.md)) |
+| **Passive** | Guide or structure | funnel, deployable structure ([sketch](../../examples/passive/README.md)) |
 
 Storage/indexing is **not** a family. It is Transfer plus optional piece-tracking capability.
 

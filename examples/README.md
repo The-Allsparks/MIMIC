@@ -18,7 +18,14 @@ See [integration.md](../docs/mechanism-control/integration.md) and [mechanism-ki
 | [transfer/](transfer/README.md) | Transfer (feeder; internal path, not "shoot") |
 | [launcher/](launcher/README.md) | Launcher energy + Arm aim (flywheel + turret/hood composition) |
 | [elevator/](elevator/README.md) | Lift / elevator (generic linear axis) |
+| [arm/](arm/README.md) | Arm (wrist / rotary pose; turret and hood are aim, not energy) |
+| [end-effector/](end-effector/README.md) | End effector (claw named states; servo command is not pose) |
+| [climber/](climber/README.md) | Climber (loaded hang; no auto-release, no homing under load) |
+| [field-element/](field-element/README.md) | Field element (spinner / pusher / grabber of a field device) |
+| [passive/](passive/README.md) | Passive (funnel or guide; zero actuators) |
+
+These sketches are not [#68](https://github.com/The-Allsparks/MIMIC/issues/68) hardware acceptance cards and do not close [#6](https://github.com/The-Allsparks/MIMIC/issues/6).
 
 ## Later phases
 
-Do not enable from examples until acceptance tests in [phases.md](../docs/mechanism-control/phases.md) pass and maintainers review.
+Do not enable from examples until acceptance tests in [phases.md](../docs/mechanism-control/phases.md) pass and maintainers review. Active control stays behind [#69](https://github.com/The-Allsparks/MIMIC/issues/69).
