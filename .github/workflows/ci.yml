@@ -1,5 +1,9 @@
 name: CI
 
+permissions:
+  contents: read
+  packages: read
+
 on:
   push:
     branches: [main]
@@ -15,6 +19,10 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: The-Allsparks/allsparks-contracts
+          path: allsparks-contracts
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -24,6 +32,8 @@ jobs:
         if: runner.os != 'Windows'
         run: chmod +x gradlew
       - name: Compile and test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew check --no-daemon
 
   docs-structure:

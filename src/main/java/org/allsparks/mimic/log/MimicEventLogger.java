@@ -41,7 +41,7 @@ public final class MimicEventLogger {
         events.add(event);
     }
 
-    public void recordObservation(MechanismSnapshot snapshot) {
+    public MimicEvent recordObservation(MechanismSnapshot snapshot) {
         Objects.requireNonNull(snapshot, "snapshot");
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("id", snapshot.mechanismId());
@@ -62,7 +62,9 @@ public final class MimicEventLogger {
         fields.put("disagree", format(snapshot.disagreement()));
         fields.put("loopNs", Long.toString(snapshot.loopDurationNanos()));
         MimicEventType type = snapshot.sensorValid() ? MimicEventType.LOOP_SAMPLE : MimicEventType.SENSOR_INVALID;
-        record(new MimicEvent(snapshot.timestampNanos(), type, "observation", fields));
+        MimicEvent event = new MimicEvent(snapshot.timestampNanos(), type, "observation", fields);
+        record(event);
+        return event;
     }
 
     public List<MimicEvent> snapshot() {

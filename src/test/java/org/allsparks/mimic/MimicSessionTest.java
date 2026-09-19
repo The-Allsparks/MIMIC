@@ -19,6 +19,7 @@ import org.allsparks.mimic.fake.FakeMechanismHardware;
 import org.allsparks.mimic.templates.MechanismConstruct;
 import org.allsparks.mimic.log.MimicEvent;
 import org.allsparks.mimic.log.MimicEventLogger;
+import org.allsparks.mimic.log.MimicEventSink;
 import org.allsparks.mimic.log.MimicEventType;
 import org.allsparks.mimic.observe.MeasurementValidity;
 import org.allsparks.mimic.observe.MechanismObserver;
@@ -228,6 +229,24 @@ class MimicSessionTest {
             }
         }
         assertTrue(found);
+    }
+
+    @Test
+    void eventSinkSeesObserveAndStopAndNoopIsSilent() {
+        AtomicLong time = new AtomicLong(1L);
+        FakeMechanismHardware hardware = hardware(time);
+        java.util.ArrayList<MimicEvent> seen = new java.util.ArrayList<>();
+        MimicSession session = MimicSession.create(hardware.observer())
+                .eventSink(seen::add);
+        session.observe();
+        session.stop();
+        session.requestGoal(1.0);
+        assertTrue(seen.size() >= 3);
+        MimicSession silent = MimicSession.create(hardware.observer());
+        int before = seen.size();
+        silent.observe();
+        assertEquals(before, seen.size());
+        assertEquals(MimicEventSink.NOOP, silent.eventSink());
     }
 
     private static FakeMechanismHardware hardware(AtomicLong time) {

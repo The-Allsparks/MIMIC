@@ -36,6 +36,17 @@ RevMotorObserver adapter = RevMotorObserver.create(
 
 MimicSession mimic = MimicSession.create(adapter.observer());
 
+// Optional: when PULSE owns Hub I/O, declare MIMIC keys and bind before freeze.
+// MIMIC does not import PULSE; TeamCode calls Pulse.bindDouble / bindBoolean.
+// MechanismObserver.Builder observer = MechanismObserver.builder(...)
+//     .ticks(() -> elevatorMotor.getCurrentPosition())
+//     ...
+// observer.declareInputs(pulse);
+// for (MechanismObserver.PhysicalDouble physical : observer.physicalDoubles()) {
+//     pulse.bindDouble(physical.key(), physical.getter());
+// }
+// MimicSession mimic = MimicSession.create(observer.readFrom(pulse).build());
+
 // inside the OpMode loop, after you command the elevator yourself:
 MechanismSnapshot snap = mimic.observe();
 telemetry.addData("elev mm", snap.position());

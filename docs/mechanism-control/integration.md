@@ -2,7 +2,9 @@
 
 ## Iterative OpModes
 
-Call `mimic.periodic()` or `observe()` once per `loop()`, **after** bulk-reading hardware if you use bulk reads, **before** or after your own `setPower` — Phase 0 does not care because it never writes. Keep sensor reads consistent (once per loop).
+Call `mimic.periodic()` or `observe()` once per `loop()`, **after** PULSE `capture()` if a sampler owns Hub I/O, or after your own bulk-read otherwise, **before** or after your own `setPower` — Phase 0 does not care because it never writes. Keep sensor reads consistent (once per loop).
+
+When a sampler owns Hub I/O (PULSE implements `InputRegistrar` / `InputValues`), TeamCode must call `declareInputs`, bind each `physicalDoubles()` / `physicalBooleans()` getter, then `readFrom`, **before** the sampler freeze. `capture()` then reads the snapshot and does not call `getCurrentPosition()` a second time. Without those calls, wired suppliers still read hardware so MIMIC remains usable without PULSE. Do not import `org.allsparks.pulse` from this library.
 
 ## Linear OpModes
 
