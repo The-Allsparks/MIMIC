@@ -46,6 +46,23 @@ public final class LimitSwitchSample {
         return asserted;
     }
 
+    /**
+     * True when this channel was expected but produced no usable reading.
+     * {@link #asserted()} is then {@code false} only because a boolean needs a
+     * value. Missing is not "not at the limit."
+     */
+    public boolean missing() {
+        return validity == MeasurementValidity.MISSING;
+    }
+
+    /**
+     * True when no switch is wired on this channel. That is not a missing
+     * reading and not a clear switch.
+     */
+    public boolean unsupported() {
+        return validity == MeasurementValidity.UNSUPPORTED;
+    }
+
     public long capturedAtNanos() {
         return capturedAtNanos;
     }

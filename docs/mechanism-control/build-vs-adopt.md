@@ -51,6 +51,8 @@ Interpolator docs mention trapezoidal profiles as an example.[^next-cs] Source o
 - may later document a TeamCode-side adapter that teams add themselves, with a license warning;
 - will keep a minimal internal profile/controller for tests if Phase 4 proceeds.
 
+The compile-time seam is `MechanismControllerAdapter` / `Setpoint` in core ([motion-control.md](motion-control.md)). **Adapter implementations live in TeamCode or tests, not as compile dependencies.** Do not add NextControl, FTCLib, or WPILib to MIMIC’s `build.gradle` ([#12](https://github.com/The-Allsparks/MIMIC/issues/12) stays out).
+
 ---
 
 ## 4. Can FTCLib or another library supply primitives?
@@ -69,7 +71,7 @@ Pedro Pathing remains the chassis motion library. AMPER remains electrical polic
 
 | Capability | Delegate to |
 |------------|-------------|
-| PID / SquID / FF / filters | NextControl adapter (TeamCode, license-aware) or FTCLib primitives or a tiny test controller |
+| PID / SquID / FF / filters | `MechanismControllerAdapter` implementations in **TeamCode or tests** (NextControl license-aware wrap, FTCLib primitives, or a tiny test stub). Not a MIMIC compile dep |
 | Chassis pathing | Pedro Pathing |
 | Field perception | ViDAR |
 | Robot-wide power allocation | AMPER (`AmperPowerRequest` / `AmperPowerGrant`) |

@@ -1,6 +1,11 @@
 package org.allsparks.mimic.observe;
 
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
+import org.allsparks.mimic.config.SensorRole;
 
 /**
  * Immutable once-per-loop mechanism snapshot. Never used to write hardware.
@@ -11,6 +16,11 @@ import java.util.Objects;
  * Position, velocity, and acceleration share {@link #positionUnitSymbol()}.
  * Effort values are dimensionless in {@code [-1, 1]}. Current is amperes or
  * {@link Double#NaN} when unsupported.
+ *
+ * Optional named extras live beside the fixed channels. {@link #sample(String)}
+ * and {@link #role(SensorRole)} look up a {@link RoleSample}. Missing names
+ * and roles are {@link MeasurementValidity#UNSUPPORTED}, not a fake
+ * {@code false} / not-asserted reading.
  */
 public final class MechanismSnapshot {
     private final String mechanismId;
@@ -29,6 +39,8 @@ public final class MechanismSnapshot {
     private final double disagreement;
     private final long timestampNanos;
     private final long loopDurationNanos;
+    private final Map<String, RoleSample> extrasByName;
+    private final Map<SensorRole, RoleSample> extrasByRole;
 
     public MechanismSnapshot(
             String mechanismId,
@@ -47,6 +59,46 @@ public final class MechanismSnapshot {
             double disagreement,
             long timestampNanos,
             long loopDurationNanos) {
+        this(
+                mechanismId,
+                positionSample,
+                velocitySample,
+                acceleration,
+                positionUnitSymbol,
+                requestedOutput,
+                appliedOutput,
+                currentAmps,
+                lowerLimit,
+                upperLimit,
+                absoluteSensor,
+                redundantPosition,
+                sensorValid,
+                disagreement,
+                timestampNanos,
+                loopDurationNanos,
+                Collections.emptyMap(),
+                Collections.emptyMap());
+    }
+
+    public MechanismSnapshot(
+            String mechanismId,
+            SensorSample positionSample,
+            SensorSample velocitySample,
+            double acceleration,
+            String positionUnitSymbol,
+            double requestedOutput,
+            double appliedOutput,
+            double currentAmps,
+            LimitSwitchSample lowerLimit,
+            LimitSwitchSample upperLimit,
+            SensorSample absoluteSensor,
+            SensorSample redundantPosition,
+            boolean sensorValid,
+            double disagreement,
+            long timestampNanos,
+            long loopDurationNanos,
+            Map<String, RoleSample> extrasByName,
+            Map<SensorRole, RoleSample> extrasByRole) {
         this.mechanismId = mechanismId == null ? "" : mechanismId;
         this.positionSample = Objects.requireNonNull(positionSample, "positionSample");
         this.velocitySample = Objects.requireNonNull(velocitySample, "velocitySample");
@@ -63,6 +115,8 @@ public final class MechanismSnapshot {
         this.disagreement = disagreement;
         this.timestampNanos = timestampNanos;
         this.loopDurationNanos = loopDurationNanos;
+        this.extrasByName = copyNamedExtras(extrasByName);
+        this.extrasByRole = copyRoleExtras(extrasByRole);
     }
 
     public String mechanismId() {
@@ -124,7 +178,7 @@ public final class MechanismSnapshot {
     }
 
     /**
-     * Aggregate health of required wired channels, not “every channel exists.”
+     * Aggregate health of required wired channels, not "every channel exists."
      *
      * True when primary position is usable, velocity is either
      * {@link MeasurementValidity#UNSUPPORTED} or usable, and redundant
@@ -146,5 +200,88 @@ public final class MechanismSnapshot {
 
     public long loopDurationNanos() {
         return loopDurationNanos;
+    }
+
+    /**
+     * Optional extras keyed by team-owned channel name. Empty when unused.
+     * Does not replace {@link #positionSample()}, {@link #velocitySample()},
+     * or the fixed limit fields.
+     */
+    public Map<String, RoleSample> extraSamples() {
+        return extrasByName;
+    }
+
+    /**
+     * Named extra by team-owned channel name. Missing names are
+     * {@link MeasurementValidity#UNSUPPORTED} on both sides of the
+     * {@link RoleSample}, not a fake {@code false}.
+     */
+    public RoleSample sample(String name) {
+        if (name == null || name.isEmpty()) {
+            return RoleSample.unsupported(timestampNanos, mechanismId + ":");
+        }
+        RoleSample extra = extrasByName.get(name);
+        if (extra != null) {
+            return extra;
+        }
+        return RoleSample.unsupported(timestampNanos, mechanismId + ":" + name);
+    }
+
+    /**
+     * Observation for a library sensor role. Fixed pose/velocity/limit
+     * channels stay available here for compatibility. Extra optional
+     * suppliers fill roles that do not already have a first-class field.
+     * Missing roles are {@link MeasurementValidity#UNSUPPORTED}, not a
+     * fake {@code false} / not-asserted reading.
+     */
+    public RoleSample role(SensorRole role) {
+        if (role == null) {
+            return RoleSample.unsupported(timestampNanos, mechanismId + ":role");
+        }
+        RoleSample firstClass = firstClassRole(role);
+        if (firstClass != null) {
+            return firstClass;
+        }
+        RoleSample extra = extrasByRole.get(role);
+        if (extra != null) {
+            return extra;
+        }
+        return RoleSample.unsupported(timestampNanos, mechanismId + ":" + role.name());
+    }
+
+    private RoleSample firstClassRole(SensorRole role) {
+        if (role == SensorRole.RELATIVE_POSITION) {
+            return RoleSample.of(positionSample);
+        }
+        if (role == SensorRole.VELOCITY) {
+            return RoleSample.of(velocitySample);
+        }
+        if (role == SensorRole.ABSOLUTE_POSITION) {
+            return RoleSample.of(absoluteSensor);
+        }
+        if (role == SensorRole.REDUNDANT_POSITION) {
+            return RoleSample.of(redundantPosition);
+        }
+        if (role == SensorRole.RETRACT_LIMIT) {
+            return RoleSample.of(lowerLimit);
+        }
+        if (role == SensorRole.EXTEND_LIMIT) {
+            return RoleSample.of(upperLimit);
+        }
+        return null;
+    }
+
+    private static Map<String, RoleSample> copyNamedExtras(Map<String, RoleSample> extrasByName) {
+        if (extrasByName == null || extrasByName.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return Collections.unmodifiableMap(new LinkedHashMap<>(extrasByName));
+    }
+
+    private static Map<SensorRole, RoleSample> copyRoleExtras(Map<SensorRole, RoleSample> extrasByRole) {
+        if (extrasByRole == null || extrasByRole.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return Collections.unmodifiableMap(new EnumMap<>(extrasByRole));
     }
 }

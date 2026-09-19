@@ -1,6 +1,6 @@
 # References
 
-Access date: **2026-08-17** unless noted. Prefer primary sources.
+Access date: **2026-08-17** unless noted. Prefer primary sources. Catalog season evidence (2026-09-16): [generic-mechanism-catalog.md](generic-mechanism-catalog.md) citing the [FTC Past Seasons Archive](https://ftc-resources.firstinspires.org/ftc/archive).
 
 | Title | Org / author | URL | Date / rev | Hardware / software gen | Claim supported | Directly FTC? | Limitations |
 |-------|--------------|-----|------------|-------------------------|-----------------|---------------|-------------|

@@ -1,6 +1,6 @@
 # Intake observation sketch (Phase 0)
 
-Generic **intake** family. Typical constructs: roller, claw, spatula. This is not a named robot intake and not a game-piece type.
+Generic **intake** family. Typical constructs: roller, spatula, deployable. A claw is an **end effector** composed with an intake, not an intake construct. This is not a named robot intake and not a game-piece type.
 
 Passive observation only. TeamCode still owns `setPower`.
 

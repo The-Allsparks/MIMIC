@@ -5,7 +5,21 @@ Generic **lift / elevator** construct. It is **not** BumbleBee hardware and not 
 This sketch shows **passive** observation only. It never calls `setPower`.
 
 ```java
-MechanismBlueprint elevator = MechanismBlueprint.of("elevator", MechanismConstruct.ELEVATOR);
+MechanismConfiguration declared =
+        MechanismConfiguration.builder("elevator")
+                .construct(MechanismConstruct.ELEVATOR)
+                .actuators(ActuatorTopology.singleMotor())
+                .sensor("position", SensorRole.RELATIVE_POSITION)
+                .sensor("home", SensorRole.RETRACT_LIMIT)
+                .enable(Capability.HOMING)
+                .enable(Capability.SOFT_LIMITS)
+                .calibrationStrategy(CalibrationStrategy.HOME_SWITCH)
+                .controlDomain(ControlDomain.PROFILED_POSITION)
+                .build();
+// declared is metadata only. TeamCode still owns setPower.
+
+MechanismBlueprint elevator = declared.toBlueprint().orElse(
+        MechanismBlueprint.of("elevator", MechanismConstruct.ELEVATOR));
 
 MechanismUnits units = MechanismUnits.linearMillimeters(
         elevator.mechanismId(),
