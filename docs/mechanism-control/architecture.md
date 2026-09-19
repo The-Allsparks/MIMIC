@@ -53,11 +53,13 @@ Phase 0/1 stop after snapshot + log. Team code still owns `setPower`.
 
 ## Library vs this year’s robot
 
-MIMIC is reusable. Generic families (intake, transfer, launcher, lift) live in `org.allsparks.mimic.templates`. Hardware maps, BIOBUZZ game pieces, BumbleBee names, and named interlocks belong in TeamCode. See [library-vs-teamcode.md](library-vs-teamcode.md) and [mechanism-kinds.md](mechanism-kinds.md).
+MIMIC is reusable. Generic families live in `org.allsparks.mimic.templates`. Instance topology, sensor roles, and capability declarations live in `org.allsparks.mimic.config` (metadata only). Hardware maps, season game pieces, robot names, and named interlocks belong in TeamCode. See [library-vs-teamcode.md](library-vs-teamcode.md), [mechanism-kinds.md](mechanism-kinds.md), and [generic-mechanism-catalog.md](generic-mechanism-catalog.md).
 
 ## `MechanismObserver`
 
 Captures once per loop: position, velocity, acceleration estimate, commanded/applied output, current where available, limits, absolute sensor, calibration observation, freshness, loop timing, redundant disagreement.
+
+Optional named extras (`namedSample` / `namedLimit`) copy onto the snapshot by team-owned name and `SensorRole`. They do not replace the fixed channels and do not change `sensorValid`.
 
 `sensorValid` is aggregate health of **required wired channels**, not “every channel exists.” Primary pose is required (omitted `ticks` keeps it false). Velocity is required only if `ticksPerSecond` is wired; `UNSUPPORTED` velocity does not clear the flag. Analog-only mechanisms wire the mapped analog value as `ticks` and omit velocity; `absoluteSensor` is an optional extra channel, not a substitute primary pose.
 
@@ -66,6 +68,22 @@ Captures once per loop: position, velocity, acceleration estimate, commanded/app
 ## `MechanismSnapshot`
 
 Immutable once-per-loop observation. Never used to write hardware. Position and velocity are `SensorSample`s (value, unit, and `MeasurementValidity`, including observer-liveness `STALE`). Scalar `position()` / `velocity()` delegate to the sample values. Absolute and redundant channels are also `SensorSample`s.
+
+Named extras are additive. `sample("entry")` and `role(SensorRole.PIECE_ENTRY)` return a `RoleSample` with either a `SensorSample` or a `LimitSwitchSample`. Declared roles such as piece-entry live here; they have no first-class snapshot field. Missing names or roles are `UNSUPPORTED` on both sides, not a fake `false` / not-asserted reading. Do not invent values. `role(RELATIVE_POSITION)` / `role(VELOCITY)` / `role(RETRACT_LIMIT)` / `role(EXTEND_LIMIT)` / `role(ABSOLUTE_POSITION)` / `role(REDUNDANT_POSITION)` still expose the existing fields. Extra optional suppliers do not replace those fields.
+
+`PieceObservation.from(snapshot)` is observe-only presence and count on those extras. `PIECE_ENTRY` / `PIECE_EXIT` report `VALID`, `MISSING`, or `UNSUPPORTED`. A missing sensor is unknown occupancy, not empty. A `VALID` count of `0` is known empty; an unwired count is unknown, not zero.
+
+`PieceTracker.capacity(3).identitySlot(0, teamProvidedLabel)` reconciles that observation into occupancy, count, TeamCode identity strings, and confidence. Disagreement is unknown (no invented count). Zero sensors stay unknown, not empty. Unused by `MimicSession`. No actuation ([#64](https://github.com/The-Allsparks/MIMIC/issues/64)).
+
+`Readiness.atSpeed(snapshot, minVel, hysteresis, dwellNanos)` is pure settling evaluation over velocity (position dual: `inTolerance`). One usable loop inside the band is not ready; dwell must elapse. Invalid velocity is not at-speed. `feed` returns a new evaluator and does not write hardware. Not a feeder interlock ([#59](https://github.com/The-Allsparks/MIMIC/issues/59)).
+
+`StallDetector.update(snapshot)` is observe-only stall suspicion from current, velocity, and a required timeout. Missing / NaN current is unsupported, not stalled. `JamDetector` uses the same heuristic. Neither writes hardware, reverse-clears, nor is called by `MimicSession` ([#60](https://github.com/The-Allsparks/MIMIC/issues/60)).
+
+`SyncContract` is an optional unused disagreement limit on independently sensed topology. Linked motors share a command; a contract on a common shaft is rejected. `actuatorCount > 1` does not imply sync. `MimicSession` does not call it. Phase 5 flags stay off. Anti-racking output and Allsparks elevator CAD stay later ([#61](https://github.com/The-Allsparks/MIMIC/issues/61), [#15](https://github.com/The-Allsparks/MIMIC/issues/15), [#16](https://github.com/The-Allsparks/MIMIC/issues/16)).
+
+`InterlockRule` is a named unused contract: `when("feeder").requires("launcher", READY).onFail(REJECT)`. Table evaluation returns `GoalDisposition`. `MimicSession` does not register rules. Not a scheduler ([#62](https://github.com/The-Allsparks/MIMIC/issues/62)).
+
+`FaultPolicy.severity(kind, degradedBehavior)` is an unused severity lookup. Latch unknown does not auto-release. `MimicSession` does not consult it. Phase 8 flags stay off ([#63](https://github.com/The-Allsparks/MIMIC/issues/63)).
 
 ## `CalibrationManager` (Phase 2 — not implemented)
 
@@ -81,15 +99,19 @@ Mechanism setpoints (not chassis paths): direct position, velocity, trapezoid or
 
 ## `MechanismController` (Phase 4)
 
-Replaceable: filter, feedback, feedforward, saturation, anti-windup. NextControl adapter is optional and not a Gradle dependency ([build-vs-adopt.md](build-vs-adopt.md)).
+Replaceable: filter, feedback, feedforward, saturation, anti-windup. Core seam: `MechanismControllerAdapter.effort(snapshot, setpoint)` returns dimensionless effort and does not write hardware. `MimicSession` does not call it. NextControl / FTCLib / WPILib adapters are optional TeamCode or test implementations and not Gradle dependencies ([build-vs-adopt.md](build-vs-adopt.md), [motion-control.md](motion-control.md)).
 
 ## `InterlockManager` (Phase 7)
 
-Named constraints: calibration, geometry, other mechanisms, ratchet/brake, robot mode.
+Engine that would command hardware: still [#19](https://github.com/The-Allsparks/MIMIC/issues/19). Not implemented. Do not add this type yet.
+
+`InterlockRule` is the named contract: `when("feeder").requires("launcher", READY).onFail(REJECT)`. `evaluate(InterlockInputs)` returns `GoalDisposition` via `GoalResult`. `MimicSession` does not register rules. Not a Command, Subsystem, or Scheduler ([#62](https://github.com/The-Allsparks/MIMIC/issues/62), [interlocks.md](interlocks.md)).
 
 ## `FaultMonitor` (Phase 8)
 
-Stale sensors, unexpected motion, no motion despite output, jumps, limit disagreement, actuator disagreement, timeout, calibration loss, stall suspicion.
+Stale sensors, unexpected motion, no motion despite output, jumps, limit disagreement, actuator disagreement, timeout, calibration loss, stall suspicion. Observe-only `StallDetector` / `JamDetector` exist unused by session; reverse-clear and Phase 8 recovery stay unimplemented.
+
+`FaultPolicy` is the unused severity table: `severity(FaultKind.SENSOR_DISAGREEMENT, DegradedBehavior.STOP_MECHANISM)`. Latch unknown does not auto-release. `MimicSession.status()` stays `DEGRADED` on invalid snapshot only. Do not enable `phase8Faults` ([#63](https://github.com/The-Allsparks/MIMIC/issues/63), [fault-handling.md](fault-handling.md)). Recovery motion remains [#20](https://github.com/The-Allsparks/MIMIC/issues/20).
 
 ## `ActuatorSafetyGate` (Phase 3+)
 

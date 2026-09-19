@@ -1,6 +1,6 @@
 # Launcher observation sketch (Phase 0)
 
-**Launcher** family: launch energy (flywheel, catapult, spinapult) plus aiming axes often composed with it (turret, hood). Give each axis its own blueprint and observer.
+**Launcher** family is launch energy only (flywheel, catapult, spinapult, puncher). Aiming axes (turret, hood) are **Arm** family constructs composed with a launcher. Give each axis its own blueprint and observer.
 
 Passive observation only. TeamCode still owns `setPower`.
 

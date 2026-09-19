@@ -1,17 +1,17 @@
 # MIMIC priority ledger
 
-Living work-order for the orchestrator. Update after each issue or pull request. Do not treat an empty ready column as “the library is complete.”
+Living work-order for the orchestrator. Update after each issue or pull request. Do not treat an empty ready column as "the library is complete."
 
 | Field | Value |
 |-------|--------|
-| **Updated** | 2026-09-16 |
-| **Audited SHA** | `5847806f094f846cb3e8a4adf7ad0b355c4034fb` |
-| **Current implementation stream** | `feature/issue-28-limit-validity-log` from `main` (`3dd761f`; PR #41 / #27 merged) |
+| **Updated** | 2026-09-17 |
+| **Audited SHA** | `feat/generic-mechanism-catalog` `39186a1` plus family observation sketches |
+| **Current implementation stream** | [PR #71](https://github.com/The-Allsparks/MIMIC/pull/71) catalog + declaration-only contracts (#49–#54, #56–#65) |
 | **Automatic merge** | **false** — human approval required |
-| **Active subagent** | implementing #28 |
-| **Hardware available** | no (TeamCode has not wired a mechanism yet) |
+| **Active subagent** | none |
+| **Hardware available** | no (TeamCode has not wired a mechanism; Hub not required for this stream) |
 
-Full findings: [initial-deep-audit.md](initial-deep-audit.md). Roadmap: [#24](https://github.com/The-Allsparks/MIMIC/issues/24).
+Full findings: [initial-deep-audit.md](initial-deep-audit.md). Catalog: [generic-mechanism-catalog.md](../mechanism-control/generic-mechanism-catalog.md). Gaps: [generic-mechanism-gap-matrix.md](../mechanism-control/generic-mechanism-gap-matrix.md). Roadmap: [#24](https://github.com/The-Allsparks/MIMIC/issues/24).
 
 ## Priority model
 
@@ -31,37 +31,35 @@ An issue is **ready** only when requirements are clear, dependencies are resolve
 
 ## Ledger
 
-| Issue | Priority | Readiness | Dependencies | Status | Subagent | Branch | PR | CI | Merge | Blocker | Next action |
-|-------|----------|-----------|--------------|--------|----------|--------|----|----|-------|---------|-------------|
-| PR #1 Phase 0 scaffold | Foundation | Review | — | Draft, CI green | — | `feature/phase-0-scaffold` | [#1](https://github.com/The-Allsparks/MIMIC/pull/1) | Green | Not authorized | Human review | Keep as current stream; do not open a competing PR |
-| #2 Research | Foundation | Implemented in PR #1 | — | Open | — | same | #1 | Green | Pending #1 | Close on merge of #1 | Commented |
-| #3 Build vs adopt | Foundation | Implemented in PR #1 | #2 | Open | — | same | #1 | Green | Pending #1 | Close on merge of #1 | Commented |
-| #4 Units conventions | Foundation | Implemented in PR #1 | — | Open | — | same | #1 | Green | Pending #1 | Close on merge of #1 | Commented |
-| #5 Phase 0 abstraction | Foundation | Implemented in PR #1; C1 recorded as liveness | #4 | Open | — | same | #1 | Green | Pending #1 | Close on merge of #1 | Wait for #25 CI on PR #1 |
-| #7 Fake hardware | Foundation | Implemented in PR #1 | #5 | Open | — | same | #1 | Green | Pending #1 | Close on merge of #1 | Commented |
-| [#25](https://github.com/The-Allsparks/MIMIC/issues/25) Stale classification | HIGH correctness | Implemented locally | Phase 0 observer (PR #1) | Observer-liveness docs + tests on PR #1 | ended after implement | `feature/phase-0-scaffold` | #1 | Pending push | Not authorized | None | Push; wait for CI; human merge |
-| [#26](https://github.com/The-Allsparks/MIMIC/issues/26) Snapshot validity | MEDIUM architecture | Done | #25 closed | Merged on `main` via [PR #40](https://github.com/The-Allsparks/MIMIC/pull/40) (`ae2f17e`) | — | `feature/issue-26-snapshot-validity` | [#40](https://github.com/The-Allsparks/MIMIC/pull/40) | Green | Merged | None | Closed with #40 |
-| [#27](https://github.com/The-Allsparks/MIMIC/issues/27) sensorValid velocity | MEDIUM correctness | Done | #26 merged | Merged on `main` via [PR #41](https://github.com/The-Allsparks/MIMIC/pull/41) (`3dd761f`) | — | `feature/issue-27-sensor-valid` | [#41](https://github.com/The-Allsparks/MIMIC/pull/41) | Green | Merged | None | Closed with #41 |
-| [#28](https://github.com/The-Allsparks/MIMIC/issues/28) Missing limit logs | MEDIUM correctness | Implemented locally | logger | Observation export adds `lowerValid` / `upperValid`; unusable `lower` / `upper` is `n/a`. `#29`/`#30`/`#32` not included. | — | `feature/issue-28-limit-validity-log` | — | — | Not authorized | None | Orchestrator commit; open PR to `main` |
-| [#29](https://github.com/The-Allsparks/MIMIC/issues/29) Phase 1 flag honesty | MEDIUM usability | Ready (Javadoc now) | #6 for full telemetry | Not started | — | — | — | — | — | Full Phase 1 needs hardware | After #25 |
-| [#30](https://github.com/The-Allsparks/MIMIC/issues/30) Pin Actions SHAs | MEDIUM security | Ready | — | Not started | — | — | — | — | — | None | After correctness slices |
-| [#31](https://github.com/The-Allsparks/MIMIC/issues/31) Branch protection | HIGH security | Human decision | Reviewer policy | Not started | — | — | — | — | — | Maintainer policy | Request decision |
-| [#32](https://github.com/The-Allsparks/MIMIC/issues/32) Logger allocation | MEDIUM performance | Research | Measurements | Not started | — | — | — | — | — | No Hub numbers | Benchmark only |
-| [#6](https://github.com/The-Allsparks/MIMIC/issues/6) Passive REV telemetry | Phase 1 | **Blocked** | Robot + PR #1 | Open | — | — | — | — | — | Hardware | Wait |
-| [#33](https://github.com/The-Allsparks/MIMIC/issues/33) Actuation flag split | LOW architecture | Deferred | Phase 6/10 | Not started | — | — | — | — | — | Later phases | Defer |
-| [#34](https://github.com/The-Allsparks/MIMIC/issues/34) FTC SDK CI job | MEDIUM testing | Not ready | Maintainer choice | Not started | — | — | — | — | — | Policy | Defer |
-| #8–#23 Phases 2–10 / SystemCore | Active / experimental | **Blocked** | Phase 0 robot observation + review | Open | — | — | — | — | — | Readiness gate | Do not implement |
+| Issue | Priority | Readiness | Dependencies | Status | Branch | PR | Merge | Blocker | Next action |
+|-------|----------|-----------|--------------|--------|--------|----|-------|---------|-------------|
+| Phase 0 scaffold | Foundation | Merged | — | Closed via PR #1 | `feature/phase-0-scaffold` | [#1](https://github.com/The-Allsparks/MIMIC/pull/1) | Merged | None | Done |
+| #2–#5, #7, #25–#28 | Foundation / correctness | Merged | — | Closed | various | #1, #40–#42 | Merged | None | Done |
+| [#49](https://github.com/The-Allsparks/MIMIC/issues/49)–[#54](https://github.com/The-Allsparks/MIMIC/issues/54), [#56](https://github.com/The-Allsparks/MIMIC/issues/56)–[#65](https://github.com/The-Allsparks/MIMIC/issues/65) | Architecture seam | Implementing | Phase 0 on `main` | Declaration-only catalog + contracts | `feat/generic-mechanism-catalog` | [#71](https://github.com/The-Allsparks/MIMIC/pull/71) | Not authorized | Human review | Review PR #71; do not merge automatically |
+| [#55](https://github.com/The-Allsparks/MIMIC/issues/55) Debounce | Architecture seam | Implementing | — | Separate PR (avoid file conflict with #71) | `feature/issue-55-debounce` | [#73](https://github.com/The-Allsparks/MIMIC/pull/73) | Not authorized | Human review | Review after or with #71 |
+| [#30](https://github.com/The-Allsparks/MIMIC/issues/30) Pin Actions SHAs | MEDIUM | Implementing | — | Open | `feature/issue-30-pin-actions` | [#72](https://github.com/The-Allsparks/MIMIC/pull/72) | Not authorized | None | Review; independent of catalog |
+| [#29](https://github.com/The-Allsparks/MIMIC/issues/29) Phase 1 flag honesty | MEDIUM | Implementing | docs; #6 for full telemetry | Open | `feature/issue-29-phase1-flag-honesty` | [#74](https://github.com/The-Allsparks/MIMIC/pull/74) | Not authorized | Hardware for full Phase 1 | Review docs/flag extras; do not duplicate #6 |
+| [#34](https://github.com/The-Allsparks/MIMIC/issues/34) FTC SDK packaging | P0 integration | Not started | Maintainer policy | Open | — | — | — | Policy | Separate epic; do not add SDK to core |
+| [#67](https://github.com/The-Allsparks/MIMIC/issues/67) FTC hardware bindings | Phase 0 pointer | Blocked | #34 | Open | — | — | — | Packaging | Keep supplier adapters; no SDK in core |
+| [#6](https://github.com/The-Allsparks/MIMIC/issues/6) Passive REV telemetry | Phase 1 | **Blocked** | Robot + #34 | Open | — | — | — | Hardware | Wait; desktop adapters already exist |
+| [#68](https://github.com/The-Allsparks/MIMIC/issues/68) Hardware acceptance | Phase 1 | **Blocked** (sign-off) | #6, robot | Open | — | — | — | Hardware | Family sketches are not signed cards |
+| [#69](https://github.com/The-Allsparks/MIMIC/issues/69) Active-control gate | Phase 3 | **Blocked** | #10, #6 graphs | Open | — | — | — | Hardware + review | Do not enable Phase 2–10 |
+| [#31](https://github.com/The-Allsparks/MIMIC/issues/31) Branch protection | HIGH | Human decision | Reviewer policy | Open | — | — | — | Maintainer policy | Request decision |
+| [#32](https://github.com/The-Allsparks/MIMIC/issues/32) Logger allocation | MEDIUM | Research | Hub measurements | Open | — | — | — | No Hub numbers | Benchmark only |
+| [#33](https://github.com/The-Allsparks/MIMIC/issues/33) Actuation flag split | LOW | Deferred | Phase 6/10 | Open | — | — | — | Later phases | Do not set those flags for metadata |
+| #8–#23 Phases 2–10 / SystemCore | Active / experimental | **Blocked** | Phase 0 robot observation + review | Open | — | — | — | Readiness gate | Do not implement |
+| [#66](https://github.com/The-Allsparks/MIMIC/issues/66), [#70](https://github.com/The-Allsparks/MIMIC/issues/70) | Experimental | **Blocked** | #69 / #22 | Open | — | — | — | Active-control gate | Do not implement |
 
 ## Selected next issue
 
 | Field | Value |
 |-------|--------|
-| **Selected** | [#28](https://github.com/The-Allsparks/MIMIC/issues/28) — Export missing limit-switch validity instead of asserted=false |
-| **Status** | Implemented locally on `feature/issue-28-limit-validity-log`. Not committed by the implementer. `#29`/`#30`/`#32` not included. |
-| **Why highest priority** | C3 correctness: CSV must not teach that a disconnected limit is “not at limit.” `#27` merged so `main` is `3dd761f`. |
-| **Dependencies** | `#27` merged; `main` at `3dd761f` |
-| **Expected deliverable** | Additive `lowerValid` / `upperValid`; unusable asserted exports as `n/a`; tests; docs |
-| **Expected validation** | `./gradlew check` (local); CI on a new PR to `main` after orchestrator commit |
+| **Selected** | Human review of open software PRs #71–#74. No new catalog issue. |
+| **Status** | #49–#65 (except #55) are stacked on PR #71 with green CI. Family observation sketches added so every catalog family has a Phase 0 example. |
+| **Why highest priority** | Implementation for the allowed stream is in review. Starting #6 / #68 / #69 would claim robot proof that does not exist. |
+| **Dependencies** | Maintainer review. Do not merge automatically. |
+| **Expected deliverable** | Reviewed PRs; flags stay default-off; FakeActuator writes stay 0 |
+| **Expected validation** | `./gradlew check`; CI already green on #71–#74 |
 | **Hardware required** | No |
 
 ## Stop conditions currently in effect
@@ -70,3 +68,4 @@ An issue is **ready** only when requirements are clear, dependencies are resolve
 - **Do not enable** Phase 2–10 actuation.
 - **Do not invent** robot hardware maps or season game-piece types in this library. See [library-vs-teamcode.md](../mechanism-control/library-vs-teamcode.md).
 - **Do not reopen** the merged Phase 0 branch (`feature/phase-0-scaffold`). New work targets `main`.
+- **Do not implement** homing motion, limit enforcement that writes, or [#6](https://github.com/The-Allsparks/MIMIC/issues/6) / [#68](https://github.com/The-Allsparks/MIMIC/issues/68) / [#69](https://github.com/The-Allsparks/MIMIC/issues/69) robot sign-off.

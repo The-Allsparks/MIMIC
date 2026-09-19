@@ -20,6 +20,15 @@ class MechanismKindTemplatesTest {
     }
 
     @Test
+    void everyStandardConstructHasAFamily() {
+        for (MechanismConstruct construct : MechanismConstruct.values()) {
+            assertTrue(
+                    MechanismConstruct.ofFamily(construct.family()).contains(construct),
+                    construct.name());
+        }
+    }
+
+    @Test
     void ofFamilyReturnsOnlyThatFamily() {
         for (MechanismFamily family : MechanismFamily.values()) {
             for (MechanismConstruct construct : MechanismConstruct.ofFamily(family)) {
@@ -44,19 +53,21 @@ class MechanismKindTemplatesTest {
     }
 
     @Test
-    void launcherConstructsIncludeStandardLayouts() {
+    void launcherConstructsAreEnergyNotAim() {
         List<MechanismConstruct> launcher = MechanismConstruct.ofFamily(MechanismFamily.LAUNCHER);
         assertTrue(launcher.contains(MechanismConstruct.FLYWHEEL));
         assertTrue(launcher.contains(MechanismConstruct.CATAPULT));
         assertTrue(launcher.contains(MechanismConstruct.SPINAPULT));
-        assertTrue(launcher.contains(MechanismConstruct.TURRET));
-        assertTrue(launcher.contains(MechanismConstruct.HOOD));
+        assertTrue(launcher.contains(MechanismConstruct.PUNCHER));
+        assertFalse(launcher.contains(MechanismConstruct.TURRET));
+        assertFalse(launcher.contains(MechanismConstruct.HOOD));
         assertTrue(MechanismConstruct.FLYWHEEL.isLaunchEnergy());
-        assertTrue(MechanismConstruct.CATAPULT.isLaunchEnergy());
-        assertTrue(MechanismConstruct.SPINAPULT.isLaunchEnergy());
+        assertTrue(MechanismConstruct.PUNCHER.isLaunchEnergy());
         assertFalse(MechanismConstruct.TURRET.isLaunchEnergy());
         assertTrue(MechanismConstruct.TURRET.isLauncherAim());
         assertTrue(MechanismConstruct.HOOD.isLauncherAim());
+        assertEquals(MechanismFamily.ARM, MechanismConstruct.TURRET.family());
+        assertEquals(MechanismFamily.ARM, MechanismConstruct.HOOD.family());
     }
 
     @Test
@@ -66,14 +77,16 @@ class MechanismKindTemplatesTest {
         assertTrue(MechanismConstruct.ofFamily(MechanismFamily.LIFT).contains(MechanismConstruct.LINEAR_SLIDE));
         assertTrue(MechanismConstruct.ofFamily(MechanismFamily.LIFT).contains(MechanismConstruct.CAPSTAN));
         assertTrue(MechanismConstruct.ofFamily(MechanismFamily.LIFT).contains(MechanismConstruct.EXTENSION));
+        assertTrue(MechanismConstruct.ofFamily(MechanismFamily.LIFT).contains(MechanismConstruct.LEAD_SCREW));
     }
 
     @Test
-    void intakeConstructsCoverRollerClawAndSpatula() {
+    void clawIsEndEffectorNotIntake() {
+        assertEquals(MechanismFamily.END_EFFECTOR, MechanismConstruct.CLAW.family());
         List<MechanismConstruct> intake = MechanismConstruct.ofFamily(MechanismFamily.INTAKE);
         assertTrue(intake.contains(MechanismConstruct.ROLLER_INTAKE));
-        assertTrue(intake.contains(MechanismConstruct.CLAW));
         assertTrue(intake.contains(MechanismConstruct.SPATULA));
+        assertFalse(intake.contains(MechanismConstruct.CLAW));
     }
 
     @Test
@@ -81,7 +94,7 @@ class MechanismKindTemplatesTest {
         MechanismBlueprint turret = MechanismBlueprint.of("aim", MechanismConstruct.TURRET);
         assertEquals("aim", turret.mechanismId());
         assertEquals(MechanismConstruct.TURRET, turret.construct());
-        assertEquals(MechanismFamily.LAUNCHER, turret.family());
+        assertEquals(MechanismFamily.ARM, turret.family());
         assertEquals("aim[TURRET]", turret.toString());
         assertEquals(turret, MechanismBlueprint.of("aim", MechanismConstruct.TURRET));
     }
@@ -99,7 +112,7 @@ class MechanismKindTemplatesTest {
     @Test
     void catalogDoesNotNameASeasonOrRobot() {
         EnumSet<MechanismFamily> families = EnumSet.allOf(MechanismFamily.class);
-        assertEquals(4, families.size());
+        assertEquals(9, families.size());
         for (MechanismFamily family : MechanismFamily.values()) {
             assertNoSeasonLeak(family.name());
             assertNoSeasonLeak(family.purpose());
@@ -117,5 +130,7 @@ class MechanismKindTemplatesTest {
         assertFalse(lower.contains("decode"), text);
         assertFalse(lower.contains("bumblebee"), text);
         assertFalse(lower.contains("flower"), text);
+        assertFalse(lower.contains("pollen"), text);
+        assertFalse(lower.contains("artifact"), text);
     }
 }

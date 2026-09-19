@@ -9,7 +9,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.allsparks.mimic.api.CalibrationState;
 import org.allsparks.mimic.api.GoalDisposition;
 import org.allsparks.mimic.api.GoalResult;
+import org.allsparks.mimic.config.ActuatorTopology;
+import org.allsparks.mimic.config.CalibrationContract;
+import org.allsparks.mimic.config.Capability;
+import org.allsparks.mimic.config.ControlDomain;
+import org.allsparks.mimic.config.MechanismConfiguration;
+import org.allsparks.mimic.config.SensorRole;
 import org.allsparks.mimic.fake.FakeMechanismHardware;
+import org.allsparks.mimic.templates.MechanismConstruct;
 import org.allsparks.mimic.log.MimicEvent;
 import org.allsparks.mimic.log.MimicEventLogger;
 import org.allsparks.mimic.log.MimicEventType;
@@ -34,6 +41,38 @@ class MimicSessionTest {
         session.periodic();
         session.stop();
         session.requestGoal(120.0);
+        assertEquals(0, hardware.actuator().outputWriteCount());
+        assertEquals(0.0, hardware.actuator().power(), 1e-9);
+    }
+
+    @Test
+    void calibrationContractDoesNotCalibrateOrAcceptGoals() {
+        MechanismConfiguration configuration =
+                MechanismConfiguration.builder("lift")
+                        .construct(MechanismConstruct.ELEVATOR)
+                        .actuators(ActuatorTopology.singleMotor())
+                        .sensor("home", SensorRole.RETRACT_LIMIT)
+                        .enable(Capability.HOMING)
+                        .calibrationContract(
+                                CalibrationContract.homeSwitch()
+                                        .maxTravel(400.0)
+                                        .timeout(2_000_000_000L)
+                                        .build())
+                        .controlDomain(ControlDomain.PROFILED_POSITION)
+                        .build();
+        assertTrue(configuration.calibrationContract().isPresent());
+        assertFalse(configuration.calibrationContract().get().permitsMotion());
+
+        AtomicLong time = new AtomicLong(0L);
+        FakeMechanismHardware hardware = hardware(time);
+        MimicSession session = MimicSession.create(hardware.observer());
+        session.observe();
+        GoalResult result = session.requestGoal(50.0);
+        assertFalse(result.accepted());
+        assertEquals(GoalDisposition.REJECTED, result.disposition());
+        assertEquals(MimicSession.NO_ACTIVE_CONTROL, result.reason());
+        assertEquals(CalibrationState.UNCALIBRATED, session.calibrationState());
+        assertFalse(session.featureFlags().isAnyActuationEnabled());
         assertEquals(0, hardware.actuator().outputWriteCount());
         assertEquals(0.0, hardware.actuator().power(), 1e-9);
     }

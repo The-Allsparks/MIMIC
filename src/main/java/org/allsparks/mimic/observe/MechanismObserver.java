@@ -1,9 +1,18 @@
 package org.allsparks.mimic.observe;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.allsparks.mimic.clock.MimicClock;
+import org.allsparks.mimic.config.SensorRole;
 import org.allsparks.mimic.units.MechanismUnits;
 
 /**
@@ -21,6 +30,10 @@ import org.allsparks.mimic.units.MechanismUnits;
  * {@link DoubleSupplier} reads cannot detect a frozen Hub cache; a timely
  * loop still reports {@code VALID}. The first capture is never {@code STALE}.
  * Limit switches and effort values are not freshness-classified in Phase 0.
+ *
+ * Optional named extras ({@code namedSample} / {@code namedLimit}) are copied
+ * onto the snapshot by name and {@link SensorRole}. They do not replace
+ * position, velocity, or the fixed limit fields and do not write hardware.
  */
 public final class MechanismObserver {
     private final String mechanismId;
@@ -40,6 +53,8 @@ public final class MechanismObserver {
     private final DoubleSupplier redundantTicks;
     private final long staleAfterNanos;
     private final double disagreementThreshold;
+    private final List<NamedNumericBinding> namedNumerics;
+    private final List<NamedDigitalBinding> namedDigitals;
 
     private double lastVelocity = Double.NaN;
     private long lastTimestampNanos;
@@ -66,6 +81,8 @@ public final class MechanismObserver {
         this.redundantTicks = builder.redundantTicks;
         this.staleAfterNanos = builder.staleAfterNanos;
         this.disagreementThreshold = builder.disagreementThreshold;
+        this.namedNumerics = Collections.unmodifiableList(new ArrayList<>(builder.namedNumerics));
+        this.namedDigitals = Collections.unmodifiableList(new ArrayList<>(builder.namedDigitals));
     }
 
     public static Builder builder(String mechanismId, MimicClock clock, MechanismUnits units) {
@@ -110,6 +127,8 @@ public final class MechanismObserver {
                         && (velocity.validity() == MeasurementValidity.UNSUPPORTED
                                 || velocity.isUsable())
                         && !disagreeing;
+        Map<String, RoleSample> extrasByName = readNamedExtras(start);
+        Map<SensorRole, RoleSample> extrasByRole = indexExtrasByRole(extrasByName);
         long duration = Math.max(0L, clock.nanoTime() - start);
         MechanismSnapshot snapshot = new MechanismSnapshot(
                 mechanismId,
@@ -127,7 +146,9 @@ public final class MechanismObserver {
                 sensorValid,
                 disagreement,
                 start,
-                duration);
+                duration,
+                extrasByName,
+                extrasByRole);
         lastCaptureNanos = start;
         hasLastCapture = true;
         lastSnapshot = snapshot;
@@ -277,6 +298,115 @@ public final class MechanismObserver {
         return new SensorSample(value, now, MeasurementValidity.VALID, channelId, unitSymbol);
     }
 
+    private Map<String, RoleSample> readNamedExtras(long now) {
+        if (namedNumerics.isEmpty() && namedDigitals.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, RoleSample> extras = new LinkedHashMap<>();
+        for (NamedNumericBinding binding : namedNumerics) {
+            extras.put(
+                    binding.name,
+                    RoleSample.of(
+                            readOptional(
+                                    binding.supplier,
+                                    now,
+                                    mechanismId + ":" + binding.name,
+                                    binding.unitSymbol)));
+        }
+        for (NamedDigitalBinding binding : namedDigitals) {
+            extras.put(
+                    binding.name,
+                    RoleSample.of(
+                            readLimit(
+                                    binding.supplier,
+                                    binding.inverted,
+                                    now,
+                                    mechanismId + ":" + binding.name)));
+        }
+        return extras;
+    }
+
+    private Map<SensorRole, RoleSample> indexExtrasByRole(Map<String, RoleSample> extrasByName) {
+        if (extrasByName.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<SensorRole, RoleSample> extrasByRole = new EnumMap<>(SensorRole.class);
+        indexBindings(extrasByName, extrasByRole, namedNumerics);
+        indexBindings(extrasByName, extrasByRole, namedDigitals);
+        return extrasByRole;
+    }
+
+    private static void indexBindings(
+            Map<String, RoleSample> extrasByName,
+            Map<SensorRole, RoleSample> extrasByRole,
+            List<? extends NamedBinding> bindings) {
+        for (NamedBinding binding : bindings) {
+            if (extrasByRole.containsKey(binding.role())) {
+                continue;
+            }
+            RoleSample sample = extrasByName.get(binding.name());
+            if (sample != null) {
+                extrasByRole.put(binding.role(), sample);
+            }
+        }
+    }
+
+    private interface NamedBinding {
+        String name();
+
+        SensorRole role();
+    }
+
+    private static final class NamedNumericBinding implements NamedBinding {
+        private final String name;
+        private final SensorRole role;
+        private final DoubleSupplier supplier;
+        private final String unitSymbol;
+
+        private NamedNumericBinding(
+                String name, SensorRole role, DoubleSupplier supplier, String unitSymbol) {
+            this.name = name;
+            this.role = role;
+            this.supplier = supplier;
+            this.unitSymbol = unitSymbol;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public SensorRole role() {
+            return role;
+        }
+    }
+
+    private static final class NamedDigitalBinding implements NamedBinding {
+        private final String name;
+        private final SensorRole role;
+        private final BooleanSupplier supplier;
+        private final boolean inverted;
+
+        private NamedDigitalBinding(
+                String name, SensorRole role, BooleanSupplier supplier, boolean inverted) {
+            this.name = name;
+            this.role = role;
+            this.supplier = supplier;
+            this.inverted = inverted;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public SensorRole role() {
+            return role;
+        }
+    }
+
     public static final class Builder {
         private final String mechanismId;
         private final MimicClock clock;
@@ -295,6 +425,9 @@ public final class MechanismObserver {
         private DoubleSupplier redundantTicks;
         private long staleAfterNanos;
         private double disagreementThreshold = Double.POSITIVE_INFINITY;
+        private final List<NamedNumericBinding> namedNumerics = new ArrayList<>();
+        private final List<NamedDigitalBinding> namedDigitals = new ArrayList<>();
+        private final Set<String> extraNames = new HashSet<>();
 
         private Builder(String mechanismId, MimicClock clock, MechanismUnits units) {
             if (mechanismId == null || mechanismId.isEmpty()) {
@@ -351,6 +484,52 @@ public final class MechanismObserver {
         public Builder redundantTicks(DoubleSupplier redundantTicks) {
             this.redundantTicks = redundantTicks;
             return this;
+        }
+
+        /**
+         * Optional numeric extra keyed by team-owned name and library role.
+         * A null supplier is treated as unwired and is not added. Missing
+         * lookups stay {@link MeasurementValidity#UNSUPPORTED}. Does not
+         * write hardware.
+         */
+        public Builder namedSample(
+                String name, SensorRole role, DoubleSupplier supplier, String unitSymbol) {
+            if (supplier == null) {
+                return this;
+            }
+            Objects.requireNonNull(role, "role");
+            String extraName = requireExtraName(name);
+            namedNumerics.add(
+                    new NamedNumericBinding(
+                            extraName, role, supplier, unitSymbol == null ? role.unitSymbol() : unitSymbol));
+            return this;
+        }
+
+        /**
+         * Optional digital extra (piece entry, latch, home index, …). A null
+         * supplier is treated as unwired and is not added. Missing lookups
+         * stay {@link MeasurementValidity#UNSUPPORTED}, not a fake
+         * {@code false}. Does not write hardware.
+         */
+        public Builder namedLimit(
+                String name, SensorRole role, BooleanSupplier supplier, boolean inverted) {
+            if (supplier == null) {
+                return this;
+            }
+            Objects.requireNonNull(role, "role");
+            String extraName = requireExtraName(name);
+            namedDigitals.add(new NamedDigitalBinding(extraName, role, supplier, inverted));
+            return this;
+        }
+
+        private String requireExtraName(String name) {
+            if (name == null || name.trim().isEmpty()) {
+                throw new IllegalArgumentException("named extra name must be non-empty");
+            }
+            if (!extraNames.add(name)) {
+                throw new IllegalArgumentException("duplicate extra name " + name);
+            }
+            return name;
         }
 
         /**

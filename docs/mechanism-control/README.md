@@ -14,7 +14,7 @@ FTC teams often copy `RUN_TO_POSITION`, a PID loop, or a state machine into ever
 ## How to use these docs
 
 1. Read [glossary.md](glossary.md) for vocabulary.
-2. Read [mechanism-kinds.md](mechanism-kinds.md) for intake, transfer, launcher, and lift templates.
+2. Read [mechanism-kinds.md](mechanism-kinds.md) for families and constructs, then [generic-mechanism-catalog.md](generic-mechanism-catalog.md) for season evidence.
 3. Read [research.md](research.md) to see what existing libraries already do.
 4. Read [build-vs-adopt.md](build-vs-adopt.md) for why MIMIC is a layer, not another PID library.
 5. Follow [phases.md](phases.md). Enable one phase at a time.

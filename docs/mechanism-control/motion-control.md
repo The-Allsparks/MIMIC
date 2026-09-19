@@ -18,7 +18,20 @@ NextControl documents interpolators including trapezoids, but the trapezoidal PR
 filtered measurement → profile reference → feedback + feedforward → saturated effort
 ```
 
-Implementations must be replaceable. Changing the controller must not change safety-gate or interlock logic.
+Phase 4 needs that replaceable seam **without** pulling NextControl into MIMIC or inventing unvalidated PID / feedforward math in core.
+
+Core types (Java 11, no records, no FTC SDK types):
+
+- `Setpoint` — immutable instantaneous reference (`position`, `velocity`, `unitSymbol`). May differ from the goal. Declaring one is not motion.
+- `MechanismControllerAdapter` — `double effort(MechanismSnapshot snap, Setpoint setpoint)`. Setpoint in, dimensionless effort out (`[-1, 1]`). No `setPower` / `setPosition`. No hardware.
+
+`MimicSession` does **not** call the adapter. `MimicFeatureFlags.phase4ProfiledControl` stays off. `ControlDomain` (including `PROFILED_POSITION`) remains a configuration declaration, not a running controller.
+
+There is no default PID in core. Do not add a WPILib-style feedforward “to fill the interface.” Fake adapters belong in unit tests and must not write `FakeActuator`. Production adapters belong in TeamCode (or a test), not as MIMIC Gradle dependencies.
+
+**License:** NextControl is GPL-3.0. MIMIC is MIT. Linking NextControl into this library would infect the published artifact. A TeamCode-side adapter may wrap NextControl later, with a license warning, after [#10](https://github.com/The-Allsparks/MIMIC/issues/10) exists so adapter output cannot reach motors unchecked. [#12](https://github.com/The-Allsparks/MIMIC/issues/12) stays out of `build.gradle`.
+
+Implementations must be replaceable. Changing the controller must not change safety-gate or interlock logic. See [build-vs-adopt.md](build-vs-adopt.md).
 
 ## Gravity
 

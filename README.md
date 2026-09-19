@@ -4,8 +4,9 @@
 
 MIMIC is an FTC-first mechanism lifecycle and safety framework. Generic
 templates cover intake, transfer (the internal path, not "shoot"), launcher
-constructs (flywheel, catapult, spinapult, turret, hood), and lift
-(elevator, slide, extension), plus coupled mechanisms.
+energy (flywheel, catapult, spinapult, puncher), arm/aim (turret, hood, wrist),
+lift, end effectors, climbers, and field-element devices, plus coupled
+mechanisms.
 
 MIMIC begins with passive observation of mechanism sensors and commands. Teams
 can then progressively enable calibration, homing, limits, profiled motion,
@@ -60,7 +61,7 @@ Supported targets for this scaffold:
 * Encoder ticks are **not** a physical pose until calibration exists (Phase 2). Phase 0 never homes.
 * Hub current sampling cost, encoder port accuracy, and limit-switch polarity must be measured on your robot.
 * MIMIC does **not** implement FRC SPARK/TalonFX firmware motion magic, REVLib onboard soft limits, or unverified SystemCore features.
-* The library has **no robot-specific controllers**. Generic families live in `org.allsparks.mimic.templates`. This year’s BumbleBee wiring is TeamCode. See [library-vs-teamcode.md](docs/mechanism-control/library-vs-teamcode.md) and [mechanism-kinds.md](docs/mechanism-control/mechanism-kinds.md).
+* The library has **no robot-specific controllers**. Generic families live in `org.allsparks.mimic.templates`. Instance metadata lives in `org.allsparks.mimic.config` and does not write hardware. This year’s BumbleBee wiring is TeamCode. See [library-vs-teamcode.md](docs/mechanism-control/library-vs-teamcode.md) and [mechanism-kinds.md](docs/mechanism-control/mechanism-kinds.md).
 
 ### Software limits do not replace mechanical design
 
@@ -113,7 +114,9 @@ See [build-versus-adopt](docs/mechanism-control/build-vs-adopt.md) and [research
 | [Troubleshooting](docs/mechanism-control/troubleshooting.md) | Failure modes |
 | [Glossary](docs/mechanism-control/glossary.md) | Vocabulary |
 | [References](docs/mechanism-control/references.md) | Citation table |
-| [Mechanism families](docs/mechanism-control/mechanism-kinds.md) | Intake, transfer, launcher, lift templates |
+| [Mechanism families](docs/mechanism-control/mechanism-kinds.md) | Intake, transfer, launcher, lift, arm, end effector, climber templates |
+| [Generic catalog](docs/mechanism-control/generic-mechanism-catalog.md) | Season evidence, taxonomy, sensor roles, feature matrix |
+| [Gap matrix](docs/mechanism-control/generic-mechanism-gap-matrix.md) | Catalog vs code, issues, and phase gates |
 | [Library vs TeamCode](docs/mechanism-control/library-vs-teamcode.md) | Generic library vs this year’s robot |
 | [Examples](examples/README.md) | Integration sketches |
 | [Phase 0 file plan](docs/mechanism-control/phase-0-plan.md) | Exact implementation plan |
