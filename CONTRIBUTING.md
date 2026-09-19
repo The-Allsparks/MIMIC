@@ -6,6 +6,8 @@ MIMIC is maintained by [The Allsparks](https://github.com/The-Allsparks) (FTC Te
 
 ```powershell
 git clone https://github.com/The-Allsparks/MIMIC.git
+# Sibling contracts checkout so includeBuild can substitute the input SPI.
+git clone https://github.com/The-Allsparks/allsparks-contracts.git
 cd MIMIC
 .\gradlew.bat test
 ```

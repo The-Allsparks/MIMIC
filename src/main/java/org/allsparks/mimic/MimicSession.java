@@ -9,6 +9,7 @@ import org.allsparks.mimic.api.MechanismStatus;
 import org.allsparks.mimic.api.MimicMechanism;
 import org.allsparks.mimic.log.MimicEvent;
 import org.allsparks.mimic.log.MimicEventLogger;
+import org.allsparks.mimic.log.MimicEventSink;
 import org.allsparks.mimic.log.MimicEventType;
 import org.allsparks.mimic.observe.LoopOverheadStats;
 import org.allsparks.mimic.observe.MechanismObserver;
@@ -28,6 +29,7 @@ public final class MimicSession implements MimicMechanism<Double> {
     private final MechanismObserver observer;
     private final MimicEventLogger logger;
     private final LoopOverheadStats loopStats;
+    private MimicEventSink eventSink = MimicEventSink.NOOP;
     private MechanismSnapshot lastSnapshot;
     private long samples;
 
@@ -54,7 +56,7 @@ public final class MimicSession implements MimicMechanism<Double> {
         MechanismSnapshot snapshot = observer.capture();
         samples++;
         loopStats.offer(snapshot.loopDurationNanos());
-        logger.recordObservation(snapshot);
+        notifySink(logger.recordObservation(snapshot));
         lastSnapshot = snapshot;
         return snapshot;
     }
@@ -74,7 +76,7 @@ public final class MimicSession implements MimicMechanism<Double> {
         long timestamp = lastSnapshot == null ? 0L : lastSnapshot.timestampNanos();
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("goal", goal == null ? "null" : Double.toString(goal));
-        logger.record(new MimicEvent(timestamp, MimicEventType.GOAL_REJECTED, NO_ACTIVE_CONTROL, fields));
+        emit(new MimicEvent(timestamp, MimicEventType.GOAL_REJECTED, NO_ACTIVE_CONTROL, fields));
         return GoalResult.rejected(NO_ACTIVE_CONTROL);
     }
 
@@ -98,7 +100,21 @@ public final class MimicSession implements MimicMechanism<Double> {
     @Override
     public void stop() {
         long timestamp = lastSnapshot == null ? 0L : lastSnapshot.timestampNanos();
-        logger.record(new MimicEvent(timestamp, MimicEventType.STOP_REQUESTED, "phase0_log_only", null));
+        emit(new MimicEvent(timestamp, MimicEventType.STOP_REQUESTED, "phase0_log_only", null));
+    }
+
+    /**
+     * TRACE / tests implement {@link MimicEventSink}. The in-memory ring stays.
+     * Null or omitted keeps {@link MimicEventSink#NOOP} so observation maps are
+     * still built for CSV, but TRACE is not called.
+     */
+    public MimicSession eventSink(MimicEventSink eventSink) {
+        this.eventSink = eventSink == null ? MimicEventSink.NOOP : eventSink;
+        return this;
+    }
+
+    public MimicEventSink eventSink() {
+        return eventSink;
     }
 
     public MimicEventLogger logger() {
@@ -115,5 +131,17 @@ public final class MimicSession implements MimicMechanism<Double> {
 
     public long sampleCount() {
         return samples;
+    }
+
+    private void emit(MimicEvent event) {
+        logger.record(event);
+        notifySink(event);
+    }
+
+    private void notifySink(MimicEvent event) {
+        if (eventSink == MimicEventSink.NOOP) {
+            return;
+        }
+        eventSink.onEvent(event);
     }
 }

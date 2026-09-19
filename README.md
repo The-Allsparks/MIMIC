@@ -60,6 +60,7 @@ Supported targets for this scaffold:
 * Phase 0 provides interfaces, immutable snapshots, unit conventions, fake hardware, logging, and read-only REV adapters. It does **not** change motor or servo output.
 * Encoder ticks are **not** a physical pose until calibration exists (Phase 2). Phase 0 never homes.
 * Hub current sampling cost, encoder port accuracy, and limit-switch polarity must be measured on your robot.
+* Optional PULSE composition uses `allsparks-contracts` (`MimicSignals`, `InputRegistrar`). MIMIC does **not** depend on `org.allsparks.pulse`. Standalone suppliers still read hardware.
 * MIMIC does **not** implement FRC SPARK/TalonFX firmware motion magic, REVLib onboard soft limits, or unverified SystemCore features.
 * The library has **no robot-specific controllers**. Generic families live in `org.allsparks.mimic.templates`. Instance metadata lives in `org.allsparks.mimic.config` and does not write hardware. This year’s BumbleBee wiring is TeamCode. See [library-vs-teamcode.md](docs/mechanism-control/library-vs-teamcode.md) and [mechanism-kinds.md](docs/mechanism-control/mechanism-kinds.md).
 

@@ -11,8 +11,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import org.allsparks.contracts.input.InputPriority;
+import org.allsparks.contracts.input.InputRegistrar;
+import org.allsparks.contracts.input.InputRequirements;
+import org.allsparks.contracts.input.InputValues;
+import org.allsparks.contracts.input.SamplingPolicy;
+import org.allsparks.contracts.input.SignalKey;
 import org.allsparks.mimic.clock.MimicClock;
 import org.allsparks.mimic.config.SensorRole;
+import org.allsparks.mimic.input.InputValuesReads;
+import org.allsparks.mimic.input.MimicSignals;
 import org.allsparks.mimic.units.MechanismUnits;
 
 /**
@@ -30,6 +38,12 @@ import org.allsparks.mimic.units.MechanismUnits;
  * {@link DoubleSupplier} reads cannot detect a frozen Hub cache; a timely
  * loop still reports {@code VALID}. The first capture is never {@code STALE}.
  * Limit switches and effort values are not freshness-classified in Phase 0.
+ *
+ * When a sampler owns Hub I/O, call {@link Builder#declareInputs} then bind
+ * {@link Builder#physicalDoubles}/{@link Builder#physicalBooleans} then
+ * {@link Builder#readFrom}. {@code capture()} then reads
+ * {@link org.allsparks.contracts.input.InputValues} and does not invoke the
+ * physical getters. MIMIC does not import PULSE.
  *
  * Optional named extras ({@code namedSample} / {@code namedLimit}) are copied
  * onto the snapshot by name and {@link SensorRole}. They do not replace
@@ -55,6 +69,14 @@ public final class MechanismObserver {
     private final double disagreementThreshold;
     private final List<NamedNumericBinding> namedNumerics;
     private final List<NamedDigitalBinding> namedDigitals;
+    private final InputValues inputValues;
+    private final SignalKey<Double> ticksKey;
+    private final SignalKey<Double> ticksPerSecondKey;
+    private final SignalKey<Double> currentKey;
+    private final SignalKey<Boolean> lowerLimitKey;
+    private final SignalKey<Boolean> upperLimitKey;
+    private final SignalKey<Double> absoluteKey;
+    private final SignalKey<Double> redundantKey;
 
     private double lastVelocity = Double.NaN;
     private long lastTimestampNanos;
@@ -83,6 +105,14 @@ public final class MechanismObserver {
         this.disagreementThreshold = builder.disagreementThreshold;
         this.namedNumerics = Collections.unmodifiableList(new ArrayList<>(builder.namedNumerics));
         this.namedDigitals = Collections.unmodifiableList(new ArrayList<>(builder.namedDigitals));
+        this.inputValues = builder.inputValues;
+        this.ticksKey = builder.ticksKey;
+        this.ticksPerSecondKey = builder.ticksPerSecondKey;
+        this.currentKey = builder.currentKey;
+        this.lowerLimitKey = builder.lowerLimitKey;
+        this.upperLimitKey = builder.upperLimitKey;
+        this.absoluteKey = builder.absoluteKey;
+        this.redundantKey = builder.redundantKey;
     }
 
     public static Builder builder(String mechanismId, MimicClock clock, MechanismUnits units) {
@@ -112,9 +142,12 @@ public final class MechanismObserver {
         double requested = readEffort(requestedOutput, start);
         double applied = appliedOutput == null ? requested : readEffort(appliedOutput, start);
         SensorSample current = readCurrent(start);
-        LimitSwitchSample lower = readLimit(lowerLimitRaw, lowerLimitInverted, start, mechanismId + ":lowerLimit");
-        LimitSwitchSample upper = readLimit(upperLimitRaw, upperLimitInverted, start, mechanismId + ":upperLimit");
-        SensorSample absolute = readOptional(absoluteSensor, start, mechanismId + ":absolute", absoluteUnitSymbol);
+        LimitSwitchSample lower =
+                readLimit(lowerLimitRaw, lowerLimitKey, lowerLimitInverted, start, mechanismId + ":lowerLimit");
+        LimitSwitchSample upper =
+                readLimit(upperLimitRaw, upperLimitKey, upperLimitInverted, start, mechanismId + ":upperLimit");
+        SensorSample absolute =
+                readOptional(absoluteSensor, absoluteKey, start, mechanismId + ":absolute", absoluteUnitSymbol);
         SensorSample redundant = readRedundant(start);
         double disagreement = Double.NaN;
         boolean disagreeing = false;
@@ -160,6 +193,15 @@ public final class MechanismObserver {
     }
 
     private SensorSample readPosition(long now) {
+        if (ticksKey != null && inputValues != null) {
+            return convertTicks(
+                    InputValuesReads.numeric(
+                            inputValues, ticksKey, now, mechanismId + ":position", units.canonicalUnitSymbol()),
+                    now,
+                    mechanismId + ":position",
+                    units.canonicalUnitSymbol(),
+                    true);
+        }
         if (ticks == null) {
             return SensorSample.unsupported(now, mechanismId + ":position", units.canonicalUnitSymbol());
         }
@@ -175,17 +217,27 @@ public final class MechanismObserver {
     }
 
     private SensorSample readVelocity(long now) {
+        String unit = units.canonicalUnitSymbol() + "/s";
+        if (ticksPerSecondKey != null && inputValues != null) {
+            return convertTicks(
+                    InputValuesReads.numeric(
+                            inputValues, ticksPerSecondKey, now, mechanismId + ":velocity", unit),
+                    now,
+                    mechanismId + ":velocity",
+                    unit,
+                    false);
+        }
         if (ticksPerSecond == null) {
-            return SensorSample.unsupported(now, mechanismId + ":velocity", units.canonicalUnitSymbol() + "/s");
+            return SensorSample.unsupported(now, mechanismId + ":velocity", unit);
         }
         try {
             double canonical = units.ticksPerSecondToCanonical(ticksPerSecond.getAsDouble());
             if (Double.isNaN(canonical)) {
-                return SensorSample.missing(now, mechanismId + ":velocity", units.canonicalUnitSymbol() + "/s");
+                return SensorSample.missing(now, mechanismId + ":velocity", unit);
             }
-            return freshness(canonical, now, mechanismId + ":velocity", units.canonicalUnitSymbol() + "/s");
+            return freshness(canonical, now, mechanismId + ":velocity", unit);
         } catch (RuntimeException ex) {
-            return SensorSample.missing(now, mechanismId + ":velocity", units.canonicalUnitSymbol() + "/s");
+            return SensorSample.missing(now, mechanismId + ":velocity", unit);
         }
     }
 
@@ -222,6 +274,13 @@ public final class MechanismObserver {
     }
 
     private SensorSample readCurrent(long now) {
+        if (currentKey != null && inputValues != null) {
+            return publishedNumeric(
+                    InputValuesReads.numeric(inputValues, currentKey, now, mechanismId + ":current", "A"),
+                    now,
+                    mechanismId + ":current",
+                    "A");
+        }
         if (currentAmps == null) {
             return SensorSample.unsupported(now, mechanismId + ":current", "A");
         }
@@ -237,6 +296,14 @@ public final class MechanismObserver {
     }
 
     private LimitSwitchSample readLimit(BooleanSupplier supplier, boolean inverted, long now, String channelId) {
+        return readLimit(supplier, null, inverted, now, channelId);
+    }
+
+    private LimitSwitchSample readLimit(
+            BooleanSupplier supplier, SignalKey<Boolean> key, boolean inverted, long now, String channelId) {
+        if (key != null && inputValues != null) {
+            return InputValuesReads.digital(inputValues, key, inverted, now, channelId);
+        }
         if (supplier == null) {
             return LimitSwitchSample.unsupported(now, channelId);
         }
@@ -249,7 +316,16 @@ public final class MechanismObserver {
         }
     }
 
-    private SensorSample readOptional(DoubleSupplier supplier, long now, String channelId, String unitSymbol) {
+    private SensorSample readOptional(
+            DoubleSupplier supplier, long now, String channelId, String unitSymbol) {
+        return readOptional(supplier, null, now, channelId, unitSymbol);
+    }
+
+    private SensorSample readOptional(
+            DoubleSupplier supplier, SignalKey<Double> key, long now, String channelId, String unitSymbol) {
+        if (key != null && inputValues != null) {
+            return publishedNumeric(InputValuesReads.numeric(inputValues, key, now, channelId, unitSymbol), now, channelId, unitSymbol);
+        }
         if (supplier == null) {
             return SensorSample.unsupported(now, channelId, unitSymbol);
         }
@@ -265,6 +341,19 @@ public final class MechanismObserver {
     }
 
     private SensorSample readRedundant(long now) {
+        if (redundantKey != null && inputValues != null) {
+            return convertTicks(
+                    InputValuesReads.numeric(
+                            inputValues,
+                            redundantKey,
+                            now,
+                            mechanismId + ":redundant",
+                            units.canonicalUnitSymbol()),
+                    now,
+                    mechanismId + ":redundant",
+                    units.canonicalUnitSymbol(),
+                    true);
+        }
         if (redundantTicks == null) {
             return SensorSample.unsupported(now, mechanismId + ":redundant", units.canonicalUnitSymbol());
         }
@@ -277,6 +366,37 @@ public final class MechanismObserver {
         } catch (RuntimeException ex) {
             return SensorSample.missing(now, mechanismId + ":redundant", units.canonicalUnitSymbol());
         }
+    }
+
+    /**
+     * Convert published encoder ticks (or ticks/s) into canonical units. PULSE
+     * {@code STALE} stays stale. {@code VALID} still applies observer-liveness.
+     */
+    private SensorSample convertTicks(
+            SensorSample raw, long now, String channelId, String unitSymbol, boolean positionNotVelocity) {
+        if (raw.validity() != MeasurementValidity.VALID && raw.validity() != MeasurementValidity.STALE) {
+            return new SensorSample(Double.NaN, raw.capturedAtNanos(), raw.validity(), channelId, unitSymbol);
+        }
+        double canonical = positionNotVelocity
+                ? units.ticksToCanonical(raw.value())
+                : units.ticksPerSecondToCanonical(raw.value());
+        if (Double.isNaN(canonical)) {
+            return SensorSample.missing(now, channelId, unitSymbol);
+        }
+        if (raw.validity() == MeasurementValidity.STALE) {
+            return SensorSample.stale(canonical, raw.capturedAtNanos(), channelId, unitSymbol);
+        }
+        return freshness(canonical, now, channelId, unitSymbol);
+    }
+
+    private SensorSample publishedNumeric(SensorSample raw, long now, String channelId, String unitSymbol) {
+        if (raw.validity() != MeasurementValidity.VALID && raw.validity() != MeasurementValidity.STALE) {
+            return new SensorSample(Double.NaN, raw.capturedAtNanos(), raw.validity(), channelId, unitSymbol);
+        }
+        if (raw.validity() == MeasurementValidity.STALE) {
+            return SensorSample.stale(raw.value(), raw.capturedAtNanos(), channelId, unitSymbol);
+        }
+        return freshness(raw.value(), now, channelId, unitSymbol);
     }
 
     /**
@@ -309,6 +429,7 @@ public final class MechanismObserver {
                     RoleSample.of(
                             readOptional(
                                     binding.supplier,
+                                    binding.key,
                                     now,
                                     mechanismId + ":" + binding.name,
                                     binding.unitSymbol)));
@@ -319,6 +440,7 @@ public final class MechanismObserver {
                     RoleSample.of(
                             readLimit(
                                     binding.supplier,
+                                    binding.key,
                                     binding.inverted,
                                     now,
                                     mechanismId + ":" + binding.name)));
@@ -361,13 +483,19 @@ public final class MechanismObserver {
         private final String name;
         private final SensorRole role;
         private final DoubleSupplier supplier;
+        private final SignalKey<Double> key;
         private final String unitSymbol;
 
         private NamedNumericBinding(
-                String name, SensorRole role, DoubleSupplier supplier, String unitSymbol) {
+                String name,
+                SensorRole role,
+                DoubleSupplier supplier,
+                SignalKey<Double> key,
+                String unitSymbol) {
             this.name = name;
             this.role = role;
             this.supplier = supplier;
+            this.key = key;
             this.unitSymbol = unitSymbol;
         }
 
@@ -386,13 +514,19 @@ public final class MechanismObserver {
         private final String name;
         private final SensorRole role;
         private final BooleanSupplier supplier;
+        private final SignalKey<Boolean> key;
         private final boolean inverted;
 
         private NamedDigitalBinding(
-                String name, SensorRole role, BooleanSupplier supplier, boolean inverted) {
+                String name,
+                SensorRole role,
+                BooleanSupplier supplier,
+                SignalKey<Boolean> key,
+                boolean inverted) {
             this.name = name;
             this.role = role;
             this.supplier = supplier;
+            this.key = key;
             this.inverted = inverted;
         }
 
@@ -404,6 +538,51 @@ public final class MechanismObserver {
         @Override
         public SensorRole role() {
             return role;
+        }
+    }
+
+    /**
+     * Physical double getter TeamCode must bind on a sampler (for example
+     * {@code Pulse.bindDouble}). MIMIC does not bind it — that would pull PULSE
+     * into this library.
+     */
+    public static final class PhysicalDouble {
+        private final SignalKey<Double> key;
+        private final DoubleSupplier getter;
+
+        PhysicalDouble(SignalKey<Double> key, DoubleSupplier getter) {
+            this.key = Objects.requireNonNull(key, "key");
+            this.getter = Objects.requireNonNull(getter, "getter");
+        }
+
+        public SignalKey<Double> key() {
+            return key;
+        }
+
+        public DoubleSupplier getter() {
+            return getter;
+        }
+    }
+
+    /**
+     * Physical boolean getter TeamCode must bind on a sampler (for example
+     * {@code Pulse.bindBoolean}).
+     */
+    public static final class PhysicalBoolean {
+        private final SignalKey<Boolean> key;
+        private final BooleanSupplier getter;
+
+        PhysicalBoolean(SignalKey<Boolean> key, BooleanSupplier getter) {
+            this.key = Objects.requireNonNull(key, "key");
+            this.getter = Objects.requireNonNull(getter, "getter");
+        }
+
+        public SignalKey<Boolean> key() {
+            return key;
+        }
+
+        public BooleanSupplier getter() {
+            return getter;
         }
     }
 
@@ -428,6 +607,18 @@ public final class MechanismObserver {
         private final List<NamedNumericBinding> namedNumerics = new ArrayList<>();
         private final List<NamedDigitalBinding> namedDigitals = new ArrayList<>();
         private final Set<String> extraNames = new HashSet<>();
+        private final List<PhysicalDouble> physicalDoubles = new ArrayList<>();
+        private final List<PhysicalBoolean> physicalBooleans = new ArrayList<>();
+        private final InputRequirements requirements = InputRequirements.create();
+        private SignalKey<Double> ticksKey;
+        private SignalKey<Double> ticksPerSecondKey;
+        private SignalKey<Double> currentKey;
+        private SignalKey<Boolean> lowerLimitKey;
+        private SignalKey<Boolean> upperLimitKey;
+        private SignalKey<Double> absoluteKey;
+        private SignalKey<Double> redundantKey;
+        private boolean declared;
+        private InputValues inputValues;
 
         private Builder(String mechanismId, MimicClock clock, MechanismUnits units) {
             if (mechanismId == null || mechanismId.isEmpty()) {
@@ -440,11 +631,19 @@ public final class MechanismObserver {
 
         public Builder ticks(DoubleSupplier ticks) {
             this.ticks = ticks;
+            if (ticks != null) {
+                this.ticksKey = MimicSignals.position(mechanismId);
+                requireDouble(ticksKey, ticks, InputPriority.NORMAL);
+            }
             return this;
         }
 
         public Builder ticksPerSecond(DoubleSupplier ticksPerSecond) {
             this.ticksPerSecond = ticksPerSecond;
+            if (ticksPerSecond != null) {
+                this.ticksPerSecondKey = MimicSignals.velocity(mechanismId);
+                requireDouble(ticksPerSecondKey, ticksPerSecond, InputPriority.NORMAL);
+            }
             return this;
         }
 
@@ -460,29 +659,49 @@ public final class MechanismObserver {
 
         public Builder currentAmps(DoubleSupplier currentAmps) {
             this.currentAmps = currentAmps;
+            if (currentAmps != null) {
+                this.currentKey = MimicSignals.current(mechanismId);
+                requireDouble(currentKey, currentAmps, InputPriority.OPTIONAL);
+            }
             return this;
         }
 
         public Builder lowerLimit(BooleanSupplier lowerLimitRaw, boolean inverted) {
             this.lowerLimitRaw = lowerLimitRaw;
             this.lowerLimitInverted = inverted;
+            if (lowerLimitRaw != null) {
+                this.lowerLimitKey = MimicSignals.lowerLimit(mechanismId);
+                requireBoolean(lowerLimitKey, lowerLimitRaw, InputPriority.CRITICAL);
+            }
             return this;
         }
 
         public Builder upperLimit(BooleanSupplier upperLimitRaw, boolean inverted) {
             this.upperLimitRaw = upperLimitRaw;
             this.upperLimitInverted = inverted;
+            if (upperLimitRaw != null) {
+                this.upperLimitKey = MimicSignals.upperLimit(mechanismId);
+                requireBoolean(upperLimitKey, upperLimitRaw, InputPriority.CRITICAL);
+            }
             return this;
         }
 
         public Builder absoluteSensor(DoubleSupplier absoluteSensor, String unitSymbol) {
             this.absoluteSensor = absoluteSensor;
             this.absoluteUnitSymbol = unitSymbol == null ? "" : unitSymbol;
+            if (absoluteSensor != null) {
+                this.absoluteKey = MimicSignals.absolute(mechanismId);
+                requireDouble(absoluteKey, absoluteSensor, InputPriority.NORMAL);
+            }
             return this;
         }
 
         public Builder redundantTicks(DoubleSupplier redundantTicks) {
             this.redundantTicks = redundantTicks;
+            if (redundantTicks != null) {
+                this.redundantKey = MimicSignals.redundant(mechanismId);
+                requireDouble(redundantKey, redundantTicks, InputPriority.NORMAL);
+            }
             return this;
         }
 
@@ -499,9 +718,15 @@ public final class MechanismObserver {
             }
             Objects.requireNonNull(role, "role");
             String extraName = requireExtraName(name);
+            SignalKey<Double> key = MimicSignals.namedNumeric(mechanismId, extraName);
+            requireDouble(key, supplier, InputPriority.NORMAL);
             namedNumerics.add(
                     new NamedNumericBinding(
-                            extraName, role, supplier, unitSymbol == null ? role.unitSymbol() : unitSymbol));
+                            extraName,
+                            role,
+                            supplier,
+                            key,
+                            unitSymbol == null ? role.unitSymbol() : unitSymbol));
             return this;
         }
 
@@ -518,8 +743,39 @@ public final class MechanismObserver {
             }
             Objects.requireNonNull(role, "role");
             String extraName = requireExtraName(name);
-            namedDigitals.add(new NamedDigitalBinding(extraName, role, supplier, inverted));
+            SignalKey<Boolean> key = MimicSignals.namedDigital(mechanismId, extraName);
+            requireBoolean(key, supplier, InputPriority.NORMAL);
+            namedDigitals.add(new NamedDigitalBinding(extraName, role, supplier, key, inverted));
             return this;
+        }
+
+        /**
+         * Register MIMIC sensor keys on a sampler. Call before freeze. Pair
+         * with {@link #readFrom(InputValues)} so {@code capture()} does not
+         * call hardware getters a second time. Requested/applied effort are
+         * last-command values and are not registered.
+         */
+        public Builder declareInputs(InputRegistrar registrar) {
+            requirements.registerWith(Objects.requireNonNull(registrar, "registrar"));
+            declared = true;
+            return this;
+        }
+
+        /**
+         * Observe published samples instead of the physical suppliers. Must
+         * follow {@link #declareInputs(InputRegistrar)}.
+         */
+        public Builder readFrom(InputValues values) {
+            this.inputValues = Objects.requireNonNull(values, "values");
+            return this;
+        }
+
+        public List<PhysicalDouble> physicalDoubles() {
+            return Collections.unmodifiableList(physicalDoubles);
+        }
+
+        public List<PhysicalBoolean> physicalBooleans() {
+            return Collections.unmodifiableList(physicalBooleans);
         }
 
         private String requireExtraName(String name) {
@@ -530,6 +786,16 @@ public final class MechanismObserver {
                 throw new IllegalArgumentException("duplicate extra name " + name);
             }
             return name;
+        }
+
+        private void requireDouble(SignalKey<Double> key, DoubleSupplier getter, InputPriority priority) {
+            physicalDoubles.add(new PhysicalDouble(key, getter));
+            requirements.require(key, SamplingPolicy.everyCycle(), priority);
+        }
+
+        private void requireBoolean(SignalKey<Boolean> key, BooleanSupplier getter, InputPriority priority) {
+            physicalBooleans.add(new PhysicalBoolean(key, getter));
+            requirements.require(key, SamplingPolicy.everyCycle(), priority);
         }
 
         /**
@@ -552,6 +818,13 @@ public final class MechanismObserver {
         }
 
         public MechanismObserver build() {
+            if (inputValues != null && !declared) {
+                throw new IllegalStateException("readFrom(InputValues) requires declareInputs(InputRegistrar) first");
+            }
+            if (declared && inputValues == null) {
+                throw new IllegalStateException(
+                        "declareInputs(...) requires readFrom(InputValues) so capture() does not call hardware a second time");
+            }
             return new MechanismObserver(this);
         }
     }
