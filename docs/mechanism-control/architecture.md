@@ -113,11 +113,13 @@ Stale sensors, unexpected motion, no motion despite output, jumps, limit disagre
 
 `FaultPolicy` is the unused severity table: `severity(FaultKind.SENSOR_DISAGREEMENT, DegradedBehavior.STOP_MECHANISM)`. Latch unknown does not auto-release. `MimicSession.status()` stays `DEGRADED` on invalid snapshot only. Do not enable `phase8Faults` ([#63](https://github.com/The-Allsparks/MIMIC/issues/63), [fault-handling.md](fault-handling.md)). Recovery motion remains [#20](https://github.com/The-Allsparks/MIMIC/issues/20).
 
-## `ActuatorSafetyGate` (Phase 3+)
+## `ActuatorSafetyGate`
 
-Last direction-aware check **immediately before** hardware output. Must remain effective if a controller, command, scheduler, or AMPER grant is wrong.
+Last check immediately before an `ActuatorSink` write. A law can ask for an unsafe number; the gate replaces it with stop or a clamped command. Open-loop effort does not require a sensor. Velocity and position commands require a usable sample of that quantity.
 
-Phase 0 does **not** implement this gate in a form that can write motors.
+`MimicSession.controlWith` is what installs the law, the gate, and the sink. Phase flags do not turn this on. An unbound session still does not write. The sink is the FTC boundary: core MIMIC does not call `setPower`.
+
+Direction-into-a-hard-limit blocking is not this gate yet. These attachments have no hard-limit switches.
 
 ## `MimicEventLogger`
 
