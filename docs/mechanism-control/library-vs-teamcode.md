@@ -12,7 +12,7 @@ MIMIC is a **reusable FTC mechanism library**. It must stay free of this year’
 | `MechanismControllerAdapter` / `Setpoint` (interface only; unused by `MimicSession`) | NextControl / FTCLib / PID implementations and license choice |
 | Examples that use string ids like `"intake"` | BIOBUZZ roles (NECTAR reject, FLOWER tray, alliance color) |
 
-TeamCode still calls `setPower` / servo writes in Phase 0/1. MIMIC observes.
+TeamCode supplies the `ActuatorSink` for a bound attachment session. That sink is what calls `setPower` or `setVelocity`, and only with the command `ActuatorSafetyGate` allowed. Unbound sessions stay observe-only. Drive wheels are not in this path.
 
 Catalog of reusable layouts: [mechanism-kinds.md](mechanism-kinds.md). This year’s BumbleBee list: [FtcRobotController TeamCode mechanisms README](https://github.com/The-Allsparks/FtcRobotController/blob/bumblebee/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/mechanisms/README.md).
 

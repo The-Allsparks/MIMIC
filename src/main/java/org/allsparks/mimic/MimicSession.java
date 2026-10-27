@@ -7,6 +7,10 @@ import org.allsparks.mimic.api.CalibrationState;
 import org.allsparks.mimic.api.GoalResult;
 import org.allsparks.mimic.api.MechanismStatus;
 import org.allsparks.mimic.api.MimicMechanism;
+import org.allsparks.mimic.control.ActuatorCommand;
+import org.allsparks.mimic.control.AttachmentControl;
+import org.allsparks.mimic.control.AttachmentGoal;
+import org.allsparks.mimic.control.GateDecision;
 import org.allsparks.mimic.log.MimicEvent;
 import org.allsparks.mimic.log.MimicEventLogger;
 import org.allsparks.mimic.log.MimicEventSink;
@@ -16,11 +20,15 @@ import org.allsparks.mimic.observe.MechanismObserver;
 import org.allsparks.mimic.observe.MechanismSnapshot;
 
 /**
- * Per-OpMode MIMIC session for one mechanism. Observes and logs; never
- * commands motors or servos.
+ * Per-OpMode MIMIC session for one mechanism. An unbound session observes
+ * and logs and does not write a sink. {@link #controlWith(AttachmentControl)}
+ * is the reviewed path that commands one attachment: capture, law, safety
+ * gate, then sink. Phase flags still do not enable that path.
  *
  * Phase 0 always samples. Phase 1 extras (richer logging) run only when
  * {@link MimicFeatureFlags#isPhase1PassiveObservation()} is true.
+ * {@link #requestGoal(Double)} stays rejected. Attachment goals use
+ * {@link #requestAttachment(AttachmentGoal)}.
  */
 public final class MimicSession implements MimicMechanism<Double> {
     public static final String NO_ACTIVE_CONTROL = "NO_ACTIVE_CONTROL";
@@ -30,8 +38,10 @@ public final class MimicSession implements MimicMechanism<Double> {
     private final MimicEventLogger logger;
     private final LoopOverheadStats loopStats;
     private MimicEventSink eventSink = MimicEventSink.NOOP;
+    private AttachmentControl control;
     private MechanismSnapshot lastSnapshot;
     private long samples;
+    private AttachmentGoal loggedGoal;
 
     public MimicSession(MimicFeatureFlags flags, MechanismObserver observer, MimicEventLogger logger) {
         this.flags = Objects.requireNonNull(flags, "flags");
@@ -49,8 +59,19 @@ public final class MimicSession implements MimicMechanism<Double> {
     }
 
     /**
-     * Read sensors and update logs. Call once per robot loop. Does not write
-     * motor or servo outputs.
+     * Install the law, gate, and sink used by later {@link #observe()} calls.
+     * Does not write hardware by itself. Phase flags are not an alternative
+     * to this call.
+     */
+    public MimicSession controlWith(AttachmentControl control) {
+        this.control = Objects.requireNonNull(control, "control");
+        return this;
+    }
+
+    /**
+     * Read sensors and update logs. Call once per robot loop. A session with
+     * {@link #controlWith(AttachmentControl)} then writes the gated command.
+     * An unbound session does not.
      */
     public MechanismSnapshot observe() {
         MechanismSnapshot snapshot = observer.capture();
@@ -58,6 +79,9 @@ public final class MimicSession implements MimicMechanism<Double> {
         loopStats.offer(snapshot.loopDurationNanos());
         notifySink(logger.recordObservation(snapshot));
         lastSnapshot = snapshot;
+        if (control != null) {
+            applyControl(snapshot);
+        }
         return snapshot;
     }
 
@@ -80,6 +104,31 @@ public final class MimicSession implements MimicMechanism<Double> {
         return GoalResult.rejected(NO_ACTIVE_CONTROL);
     }
 
+    /**
+     * Store one attachment goal for the next {@link #observe()}. Unbound
+     * sessions reject it and do not write. A repeated goal is not logged again.
+     */
+    public GoalResult requestAttachment(AttachmentGoal goal) {
+        long timestamp = lastSnapshot == null ? 0L : lastSnapshot.timestampNanos();
+        if (control == null) {
+            emit(new MimicEvent(timestamp, MimicEventType.GOAL_REJECTED, NO_ACTIVE_CONTROL, null));
+            return GoalResult.rejected(NO_ACTIVE_CONTROL);
+        }
+        GoalResult result = control.accept(goal);
+        if (!result.accepted()) {
+            emit(new MimicEvent(timestamp, MimicEventType.GOAL_REJECTED, result.reason(), null));
+            return result;
+        }
+        if (loggedGoal == null || !loggedGoal.sameRequest(goal)) {
+            Map<String, String> fields = new LinkedHashMap<>();
+            fields.put("kind", goal.kind().name());
+            fields.put("value", Double.toString(goal.value()));
+            emit(new MimicEvent(timestamp, MimicEventType.GOAL_ACCEPTED, result.reason(), fields));
+            loggedGoal = goal;
+        }
+        return result;
+    }
+
     @Override
     public MechanismStatus status() {
         if (lastSnapshot == null) {
@@ -94,12 +143,18 @@ public final class MimicSession implements MimicMechanism<Double> {
     }
 
     /**
-     * Records a stop request. Phase 0 does not write hardware; tests must
-     * confirm actuator write counts remain unchanged.
+     * Records a stop request. An unbound session does not write. A bound
+     * session writes {@link ActuatorCommand#stop()} through the sink.
      */
     @Override
     public void stop() {
         long timestamp = lastSnapshot == null ? 0L : lastSnapshot.timestampNanos();
+        if (control != null) {
+            control.forceStop();
+            loggedGoal = AttachmentGoal.stop();
+            emit(new MimicEvent(timestamp, MimicEventType.STOP_REQUESTED, "gated_stop", null));
+            return;
+        }
         emit(new MimicEvent(timestamp, MimicEventType.STOP_REQUESTED, "phase0_log_only", null));
     }
 
@@ -131,6 +186,17 @@ public final class MimicSession implements MimicMechanism<Double> {
 
     public long sampleCount() {
         return samples;
+    }
+
+    private void applyControl(MechanismSnapshot snapshot) {
+        GateDecision decision = control.apply(snapshot);
+        if (decision.passed()) {
+            return;
+        }
+        Map<String, String> fields = new LinkedHashMap<>();
+        fields.put("reason", decision.reason());
+        fields.put("kind", decision.command().kind().name());
+        emit(new MimicEvent(snapshot.timestampNanos(), MimicEventType.SAFETY_GATE, decision.reason(), fields));
     }
 
     private void emit(MimicEvent event) {
