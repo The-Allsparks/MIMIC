@@ -11,7 +11,8 @@ public final class AttachmentGoal {
         HOLD_VELOCITY,
         REVERSE,
         STOP,
-        TRIGGER
+        TRIGGER,
+        STEP
     }
 
     private final Kind kind;
@@ -32,9 +33,12 @@ public final class AttachmentGoal {
         return new AttachmentGoal(Kind.HOLD_VELOCITY, ticksPerSecond);
     }
 
-    /** Open-loop reverse. The magnitude is the caller's reverse power. */
-    public static AttachmentGoal reverse(double power) {
-        return new AttachmentGoal(Kind.REVERSE, power);
+    /**
+     * Reverse hold, in ticks per second. Negative spins the other way from a
+     * forward hold. The law does not treat this as at-speed.
+     */
+    public static AttachmentGoal reverse(double ticksPerSecond) {
+        return new AttachmentGoal(Kind.REVERSE, ticksPerSecond);
     }
 
     /** Park. Laws must not keep a previous motion running. */
@@ -50,11 +54,19 @@ public final class AttachmentGoal {
         return new AttachmentGoal(Kind.TRIGGER, travel);
     }
 
+    /**
+     * One index step. {@code +1} is the trigger's direction. {@code -1} is the
+     * other way. The index law does not wait on the launcher for this goal.
+     */
+    public static AttachmentGoal step(int direction) {
+        return new AttachmentGoal(Kind.STEP, direction < 0 ? -1.0 : 1.0);
+    }
+
     public Kind kind() {
         return kind;
     }
 
-    /** Effort, ticks per second, reverse power, or trigger travel. */
+    /** Effort, ticks per second, reverse ticks per second, or trigger travel. */
     public double value() {
         return value;
     }

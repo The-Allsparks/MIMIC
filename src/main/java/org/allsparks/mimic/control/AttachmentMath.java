@@ -92,7 +92,7 @@ public final class AttachmentMath {
      * total keeps three steps equal to one revolution, plus at most one count.
      */
     public static int indexTicks(int indexes, double ticksPerRevolution) {
-        if (indexes <= 0 || !Double.isFinite(ticksPerRevolution) || ticksPerRevolution <= 0.0) {
+        if (indexes == 0 || !Double.isFinite(ticksPerRevolution) || ticksPerRevolution <= 0.0) {
             return 0;
         }
         return (int) Math.round(indexes * (ticksPerRevolution / 3.0));

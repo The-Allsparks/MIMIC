@@ -87,6 +87,39 @@ class AttachmentControlTest {
     }
 
     @Test
+    void mirroredWheelCountsAsAtSpeedWhenTheMagnitudeIsInBand() {
+        RecordingSink sink = new RecordingSink();
+        VelocityHoldLaw law = new VelocityHoldLaw(70.0);
+        MimicSession session = MimicSession.create(observer(new FakeActuator(), () -> 10.0, () -> -2100.0))
+                .controlWith(new AttachmentControl(
+                        law,
+                        ActuatorSafetyGate.effortAndVelocity(1.0, 2800.0),
+                        sink,
+                        AttachmentContext.open()));
+        session.requestAttachment(AttachmentGoal.holdVelocity(2100.0));
+        session.observe();
+        assertEquals(2100.0, sink.last.velocity(), 1e-9);
+        assertTrue(law.atSpeed());
+    }
+
+    @Test
+    void reverseHoldIsNegativeVelocityAndDoesNotCountAsAtSpeed() {
+        RecordingSink sink = new RecordingSink();
+        VelocityHoldLaw law = new VelocityHoldLaw(70.0);
+        MimicSession session = MimicSession.create(observer(new FakeActuator(), () -> 10.0, () -> -93.0))
+                .controlWith(new AttachmentControl(
+                        law,
+                        ActuatorSafetyGate.effortAndVelocity(1.0, 2800.0),
+                        sink,
+                        AttachmentContext.open()));
+        session.requestAttachment(AttachmentGoal.reverse(-93.333));
+        session.observe();
+        assertEquals(ActuatorCommand.Kind.VELOCITY, sink.last.kind());
+        assertEquals(-93.333, sink.last.velocity(), 1e-9);
+        assertFalse(law.atSpeed());
+    }
+
+    @Test
     void indexRequiresLauncherReadyAndDoesNotRepeatWhileHeld() {
         AtomicReference<Double> ticks = new AtomicReference<>(0.0);
         RecordingSink sink = new RecordingSink();
@@ -115,6 +148,32 @@ class AttachmentControlTest {
 
         session.observe();
         assertEquals(179, sink.last.positionTicks());
+    }
+
+    @Test
+    void bumperStepMovesWithoutLauncherReadyAndDoesNotRepeat() {
+        AtomicReference<Double> ticks = new AtomicReference<>(0.0);
+        RecordingSink sink = new RecordingSink();
+        DiscreteIndexLaw law = new DiscreteIndexLaw(537.7, 0.8, 0.2);
+        MimicSession session = MimicSession.create(observer(new FakeActuator(), ticks::get, () -> 0.0))
+                .controlWith(new AttachmentControl(
+                        law,
+                        ActuatorSafetyGate.effortAndPosition(1.0),
+                        sink,
+                        AttachmentContext.blocked()));
+
+        session.requestAttachment(AttachmentGoal.step(-1));
+        session.observe();
+        assertEquals(-179, sink.last.positionTicks());
+        assertEquals(0.2, sink.last.power(), 1e-9);
+
+        session.observe();
+        assertEquals(-179, sink.last.positionTicks());
+
+        session.requestAttachment(AttachmentGoal.trigger(1.0));
+        session.observe();
+        assertEquals(-179, sink.last.positionTicks());
+        assertEquals(0.2, sink.last.power(), 1e-9);
     }
 
     @Test

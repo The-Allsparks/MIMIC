@@ -3,8 +3,9 @@ package org.allsparks.mimic.control;
 import org.allsparks.mimic.observe.MechanismSnapshot;
 
 /**
- * One flywheel. Hold is a velocity command. Reverse is open-loop effort and
- * wins over hold when the caller sends {@link AttachmentGoal#reverse(double)}.
+ * One flywheel. Hold is a velocity command. Reverse is a velocity command too,
+ * at the caller's ticks per second, and it wins over hold. It does not count
+ * as at-speed, so a slow reverse cannot arm a shot.
  * {@link #atSpeed()} is this wheel only.
  */
 public final class VelocityHoldLaw implements AttachmentLaw {
@@ -27,11 +28,14 @@ public final class VelocityHoldLaw implements AttachmentLaw {
     public ActuatorCommand command(MechanismSnapshot snapshot, AttachmentGoal goal, AttachmentContext context) {
         if (goal != null && goal.kind() == AttachmentGoal.Kind.REVERSE) {
             atSpeed = false;
-            return ActuatorCommand.effort(goal.value());
+            return ActuatorCommand.velocity(goal.value());
         }
         if (goal != null && goal.kind() == AttachmentGoal.Kind.HOLD_VELOCITY) {
             double measured = usableVelocity(snapshot);
-            atSpeed = AttachmentMath.inBand(measured, goal.value(), bandTicksPerSecond);
+            // Magnitude. A mirrored flywheel reads the opposite sign of the target and would
+            // otherwise stay outside the band, so a full trigger pull never indexes.
+            atSpeed = AttachmentMath.inBand(
+                    Math.abs(measured), Math.abs(goal.value()), bandTicksPerSecond);
             return ActuatorCommand.velocity(goal.value());
         }
         atSpeed = false;
